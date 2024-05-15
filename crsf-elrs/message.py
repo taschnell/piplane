@@ -122,9 +122,8 @@ def handleCrsfPacket(ptype, data):
         vspd = int.from_bytes(data[3:5], byteorder="big", signed=True) / 10.0
         print(f"VSpd: {vspd:0.1f}m/s")
     elif ptype == PacketsTypes.RC_CHANNELS_PACKED:
-        print(f"Channels: {len(interpret_rc_channels(data[3:25]))}")
+        #print(f"Channels: {len(interpret_rc_channels(data[3:25]))}")
         return interpret_rc_channels(data[3:25])
-
     else:
         packet = " ".join(map(hex, data))
         print(f"Unknown 0x{ptype:02x}: {packet}")
@@ -145,28 +144,35 @@ args = parser.parse_args()
 
 with serial.Serial(args.port, args.baud, timeout=2) as ser:
     input = bytearray()
-    while True:
-        if ser.in_waiting > 0:
-            input.extend(ser.read(ser.in_waiting))
-        else:
-            if args.tx:
-                ser.write(channelsCrsfToChannelsPacket([992 for ch in range(16)]))
-            # time.sleep(0.002)
+    counter = 0
+    start = time.time()
+    try:
+        while True:
+            if ser.in_waiting > 0:
+                input.extend(ser.read(ser.in_waiting))
+            else:
+                if args.tx:
+                    ser.write(channelsCrsfToChannelsPacket([992 for ch in range(16)]))
+                # time.sleep(0.002)
 
-        if len(input) > 2:
-            # This simple parser works with malformed CRSF streams
-            # it does not check the first byte for SYNC_BYTE, but
-            # instead just looks for anything where the packet length
-            # is 4-64 bytes, and the CRC validates
-            expected_len = input[1] + 2
-            if expected_len > 64 or expected_len < 4:
-                input = []
-            elif len(input) >= expected_len:
-                single = input[:expected_len]  # copy out this whole packet
-                input = input[expected_len:]  # and remove it from the buffer
-                if not crsf_validate_frame(single):  # single[-1] != crc:
-                    packet = " ".join(map(hex, single))
-                    print(f"crc error: {packet}")
-                else:
-                    int_list = handleCrsfPacket(single[2], single)
-                    print(int_list)
+            if len(input) > 2:
+                # This simple parser works with malformed CRSF streams
+                # it does not check the first byte for SYNC_BYTE, but
+                # instead just looks for anything where the packet length
+                # is 4-64 bytes, and the CRC validates
+                expected_len = input[1] + 2
+                if expected_len > 64 or expected_len < 4:
+                    input = []
+                elif len(input) >= expected_len:
+                    single = input[:expected_len]  # copy out this whole packet
+                    input = input[expected_len:]  # and remove it from the buffer
+                    if not crsf_validate_frame(single):  # single[-1] != crc:
+                        packet = " ".join(map(hex, single))
+                        print(f"crc error: {packet}")
+                    else:
+                        int_list = handleCrsfPacket(single[2], single)
+                        counter +=1
+                        print(int_list)
+    except:
+        print(time.time()-start)
+        print(counter/(time.time()-start))
