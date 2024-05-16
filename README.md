@@ -12,12 +12,12 @@ A Personal Project to create a simplified FC software for a Raspberry Pi. Inspir
 - **Sensors:** Serial GPS, Accelerometer, Magnetometer (Compass), ETC 
 
 ## Hardware Requirements
-Raspberry Pi-5
-Waveshare Sense Hat (B)
-- *Relevent Sensors*
-  - ICM20948 - Accelometer and Gyro.
-  - SHTC3 - Temp and Humidity
-  - LPS22HB - Barometer
+- Raspberry Pi-5
+- Waveshare Sense Hat (B)
+  - *Relevent Sensors*
+    - ICM20948 - Accelometer and Gyro.
+    - SHTC3 - Temp and Humidity
+    - LPS22HB - Barometer
 
 ## Software Requirements
 TBD
