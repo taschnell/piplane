@@ -13,6 +13,8 @@ A Personal Project to create a simplified FC software for a Raspberry Pi. Inspir
 
 ## Hardware Requirements
 - Raspberry Pi-5
+- ELRS TX and RX
+  - Run at 100 HZ to save CPU Time
 - Waveshare Sense Hat (B)
   - *Relevent Sensors* <-- This is proably going to change
     - ICM20948 - Accelometer and Gyro.
