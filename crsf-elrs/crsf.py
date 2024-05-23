@@ -202,7 +202,7 @@ def main(args=None):
         start = time.time()
         try:
             while rclpy.ok():
-                rclpy.spin_once(node, timeout_sec=0.0001)
+                rclpy.spin_once(node, timeout_sec=0.005)
                 if ser.in_waiting > 0:
                     input.extend(ser.read(ser.in_waiting))
                 else:
