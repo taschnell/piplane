@@ -50,15 +50,50 @@ def signed_byte(b):
 
 def interpret_rc_channels(byte_data):
     """
-    Handels
+    Handels byte Data from Rc_Channels_Packed
     """
     num = int.from_bytes(byte_data, byteorder="little")
     crsf_channel_values = []
     for i in range(16):
         shift_amount = 11 * i
         int_value = (num >> shift_amount) & 0x7FF
-        crsf_channel_values.append(int_value)
-    return crsf_channel_values
+        crsf_channel_values.append(convert_number(int_value))
+    return (crsf_channel_values)
+
+def convert_number(input_number) -> int:
+    """
+    Converts CRSF_Channel int value to us values 
+        points = [(172, 988), (992, 1500), (1811, 2012)]
+    """
+    if not 0 <= input_number <= 1984:
+        raise ValueError("Input number must be in the range 0-1984.")
+
+    # Define known input-output pairs
+    points = [(172, 988), (992, 1500), (1811, 2012)]
+
+    # Perform linear interpolation
+    if input_number <= points[0][0]:
+        # Extrapolate below the first point
+        x0, y0 = 0, 0
+        x1, y1 = points[0]
+    elif input_number >= points[-1][0]:
+        # Extrapolate above the last point
+        x0, y0 = points[-1]
+        x1, y1 = 1984, 2012 + (2012 - points[-2][1])
+    else:
+        # Interpolate between points
+        for i in range(len(points) - 1):
+            x0, y0 = points[i]
+            x1, y1 = points[i + 1]
+            if x0 <= input_number <= x1:
+                break
+
+    # Calculate the interpolated value
+    if x0 == x1:
+        return y0  # Avoid division by zero if points are the same
+    else:
+        output_number = y0 + (input_number - x0) * (y1 - y0) / (x1 - x0)
+        return int(output_number)
 
 
 def channelsCrsfToChannelsPacket(channels) -> bytes:
