@@ -4,13 +4,14 @@ import time
 import argparse
 from enum import IntEnum
 import sys
-# Ros2
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
 
+# Ros2
+import rclpy # type: ignore
+from rclpy.node import Node # type: ignore
+from std_msgs.msg import Int16MultiArray # type: ignore
 
 CRSF_SYNC = 0xC8
+
 
 class PacketsTypes(IntEnum):
     GPS = 0x02
@@ -64,11 +65,12 @@ def interpret_rc_channels(byte_data):
         shift_amount = 11 * i
         int_value = (num >> shift_amount) & 0x7FF
         crsf_channel_values.append(convert_number(int_value))
-    return (crsf_channel_values)
+    return crsf_channel_values
+
 
 def convert_number(input_number) -> int:
     """
-    Converts CRSF_Channel int value to us values 
+    Converts CRSF_Channel int value to us values
         points = [(172, 988), (992, 1500), (1811, 2012)]
     """
     if not 0 <= input_number <= 1984:
@@ -163,21 +165,23 @@ def handleCrsfPacket(ptype, data):
         vspd = int.from_bytes(data[3:5], byteorder="big", signed=True) / 10.0
         print(f"VSpd: {vspd:0.1f}m/s")
     elif ptype == PacketsTypes.RC_CHANNELS_PACKED:
-        #print(f"Channels: {len(interpret_rc_channels(data[3:25]))}")
+        # print(f"Channels: {len(interpret_rc_channels(data[3:25]))}")
         return interpret_rc_channels(data[3:25])
     else:
         packet = " ".join(map(hex, data))
         print(f"Unknown 0x{ptype:02x}: {packet}")
 
+
 class CrsfNode(Node):
     def __init__(self):
-        super().__init__('crsf_node')
-        self.publisher_ = self.create_publisher(String, 'crsf_channels_data', 1)
+        super().__init__("crsf_node")
+        self.channel_publisher_ = self.create_publisher(Int16MultiArray, "crsf_channels_data", 1)
 
-    def publish_data(self, data):
-        msg = String()
-        msg.data = str(data)
-        self.publisher_.publish(msg)
+    def publish_channel_data(self, data):
+        msg = Int16MultiArray()
+        msg.data = (data)
+        self.channel_publisher_.publish(msg)
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -205,9 +209,11 @@ def main(args=None):
                 rclpy.spin_once(node, timeout_sec=0.005)
                 if ser.in_waiting > 0:
                     input.extend(ser.read(ser.in_waiting))
-                else:
-                    if args.tx:
-                        ser.write(channelsCrsfToChannelsPacket([992 for ch in range(16)]))
+                # else:
+                #     if args.tx:
+                #         ser.write(
+                #             channelsCrsfToChannelsPacket([992 for ch in range(16)])
+                #         )
                     # time.sleep(0.002)
 
                 if len(input) > 2:
@@ -227,7 +233,7 @@ def main(args=None):
                         else:
                             int_list = handleCrsfPacket(single[2], single)
                             if int_list:
-                                node.publish_data(int_list)
+                                node.publish_channel_data(int_list)
                             counter += 1
                             # print(int_list)
                             # print(time.time()-start, counter/(time.time()-start))
@@ -237,5 +243,6 @@ def main(args=None):
         finally:
             rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
