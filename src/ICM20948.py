@@ -386,7 +386,7 @@ if __name__ == '__main__':
         icm20948.icm20948_Gyro_Accel_Read()
         icm20948.icm20948MagRead()
         icm20948.icm20948CalAvgValue()
-        time.sleep(0.01)
+        time.sleep(0.001)
         icm20948.imuAHRSupdate(MotionVal[0] * 0.0175, MotionVal[1] * 0.0175,MotionVal[2] * 0.0175,
                     MotionVal[3],MotionVal[4],MotionVal[5], 
                     MotionVal[6], MotionVal[7], MotionVal[8])

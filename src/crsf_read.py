@@ -6,10 +6,9 @@ from enum import IntEnum
 import sys
 
 # Ros2
-import rclpy # type: ignore
-from rclpy.node import Node # type: ignore
-from std_msgs.msg import Int16MultiArray # type: ignore
-
+import rclpy
+from rclpy.node import Node 
+from std_msgs.msg import Int16MultiArray
 CRSF_SYNC = 0xC8
 
 
