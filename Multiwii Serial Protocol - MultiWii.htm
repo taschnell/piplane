@@ -1,0 +1,1486 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="client-js"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<meta charset="UTF-8">
+<title>Multiwii Serial Protocol - MultiWii</title>
+<meta name="generator" content="MediaWiki 1.25.1">
+<link rel="shortcut icon" href="http://www.multiwii.com/favicon.ico">
+<link rel="search" type="application/opensearchdescription+xml" href="http://www.multiwii.com/wiki/opensearch_desc.php" title="MultiWii (en)">
+<link rel="EditURI" type="application/rsd+xml" href="http://www.multiwii.com/wiki/api.php?action=rsd">
+<link rel="alternate" hreflang="x-default" href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol">
+<link rel="alternate" type="application/atom+xml" title="MultiWii Atom feed" href="http://www.multiwii.com/wiki/index.php?title=Special:RecentChanges&amp;feed=atom">
+<link rel="stylesheet" href="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/load.htm">
+<style>
+.mw-collapsible-toggle{float:right;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;user-select:none}  .mw-content-ltr .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr .mw-collapsible-toggle{float:right} .mw-content-rtl .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl .mw-collapsible-toggle{float:left}.mw-customtoggle,.mw-collapsible-toggle{cursor:pointer} caption .mw-collapsible-toggle,.mw-content-ltr caption .mw-collapsible-toggle,.mw-content-rtl caption .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr caption .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl caption .mw-collapsible-toggle{float:none} li .mw-collapsible-toggle,.mw-content-ltr li .mw-collapsible-toggle,.mw-content-rtl li .mw-collapsible-toggle,.mw-content-rtl .mw-content-ltr li .mw-collapsible-toggle,.mw-content-ltr .mw-content-rtl li .mw-collapsible-toggle{float:none} .mw-collapsible-toggle-li{list-style:none}
+/* cache key: multiwii_com:resourceloader:filter:minify-css:7:e1ffd603cbaaa5f1a36e0d13fe843535 */
+.suggestions{overflow:hidden;position:absolute;top:0;left:0;width:0;border:none;z-index:1099;padding:0;margin:-1px 0 0 0}.suggestions-special{position:relative;background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0;margin-top:-2px;display:none;padding:0.25em 0.25em;line-height:1.25em}.suggestions-results{background-color:white;cursor:pointer;border:solid 1px #aaaaaa;padding:0;margin:0}.suggestions-result{color:black;margin:0;line-height:1.5em;padding:0.01em 0.25em;text-align:left; overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}.suggestions-result-current{background-color:#4C59A6;color:white}.suggestions-special .special-label{color:gray;text-align:left}.suggestions-special .special-query{color:black;font-style:italic;text-align:left}.suggestions-special .special-hover{background-color:silver}.suggestions-result-current .special-label,.suggestions-result-current .special-query{color:white}.highlight{font-weight:bold}
+/* cache key: multiwii_com:resourceloader:filter:minify-css:7:f8d0c6895ce3ae14434c16b8fca59432 */
+.postedit-container{margin:0 auto;position:fixed;top:0;height:0;left:50%;z-index:1000;font-size:13px}.postedit-container:hover{cursor:pointer}.postedit{position:relative;top:0.6em;left:-50%;padding:.6em 3.6em .6em 1.1em;line-height:1.5625em;color:#626465;background-color:#f4f4f4;border:1px solid #dcd9d9;text-shadow:0 0.0625em 0 rgba(255,255,255,0.5);border-radius:5px;box-shadow:0 2px 5px 0 #ccc;-webkit-transition:all 0.25s ease-in-out;-moz-transition:all 0.25s ease-in-out;-ms-transition:all 0.25s ease-in-out;-o-transition:all 0.25s ease-in-out;transition:all 0.25s ease-in-out}.skin-monobook .postedit{top:6em !important}.postedit-faded{opacity:0}.postedit-icon{padding-left:41px;  line-height:25px;background-repeat:no-repeat;background-position:8px 50%}.postedit-icon-checkmark{background-image:url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABblBMVEUAAAD///////9PfTf///80aRdTgjn///9Feij///////////9Rfzf///////////9PfjZRgDh1o1xOfTb///////+bwYqLtnj///////9PfTa82K////9WhT6YxIL///9QgDdTgzr////////j7uDl7eLq8efi693k7OH///////9UhjuBr2rp9uRUhjr///9YljVKgir///9WiTlYjT3////9/v57vFlbkT5PjC9dlD/5/fhuq09stUTs9uhxuElctCpfnT1huDFloEZloUZmpENmvDZpvDxpvTxqvjxrvT5rvT9rwTxsqktswD5uwkBvuUdxw0NztFBztU9ztVBzwkp0tlJ1xkd2t1R3uVR4w1F4xk54x014yE15uVZ5v1R5xVB6v1R7yFJ8wVh9xVl9yFR9yVd9ylN+xVh+yFd/x1l/yFeAylmEx1+Ny2uY0Hqe04Wj1Ymv3Ze33qLD47TJ5L3O6cPU7Mrq9eb2+/Q4j37OAAAAQHRSTlMAAQIEBAUFBQwPFB4fJCUoKiosQEhJS01RUlZZXmdydXaChYuSlJSWmJmoq6uur8LExcvM19fg5ejt8fX2+Pr7SljgewAAAKpJREFUGBkFwQNCAwAAAMDLtl3LtrG4rWXbtvX77gAgZ6grFwC0bhwNVgKgdPZx8b0dgLi+s7Wn0VoAqpfOI9+BNADZI7fLrz2pSEwGHZuH+78lSK8ZLkLezF3ooyUG3VPXq2USei9WngeyoG195yBYWDF3E/2pAhl1e9Gr8bGT+bfOFCC2fnvh4X7rcqIAQNNu+HT6sxkAjceTL/2ZAIhv+PorBwBJxfkA//dFHSCBy/UTAAAAAElFTkSuQmCC);background-image:url(http://www.multiwii.com/wiki/resources/src/mediawiki.action/images/green-checkmark.png?2015-06-28T23:35:00Z)!ie;background-position:left}.postedit-close{position:absolute;padding:0 .8em;right:0;top:0;font-size:1.25em;font-weight:bold;line-height:2.3em;color:black;text-shadow:0 0.0625em 0 white;text-decoration:none;opacity:0.2;filter:alpha(opacity=20)}.postedit-close:hover{color:black;text-decoration:none;opacity:0.4;filter:alpha(opacity=40)}
+/* cache key: multiwii_com:resourceloader:filter:minify-css:7:414126dcb964a18b44807789dc158488 */</style><style>
+.suggestions a.mw-searchSuggest-link,.suggestions a.mw-searchSuggest-link:hover,.suggestions a.mw-searchSuggest-link:active,.suggestions a.mw-searchSuggest-link:focus{color:black;text-decoration:none}.suggestions-result-current a.mw-searchSuggest-link,.suggestions-result-current a.mw-searchSuggest-link:hover,.suggestions-result-current a.mw-searchSuggest-link:active,.suggestions-result-current a.mw-searchSuggest-link:focus{color:white}.suggestions a.mw-searchSuggest-link .special-query{ overflow:hidden;-o-text-overflow:ellipsis; text-overflow:ellipsis;white-space:nowrap}
+/* cache key: multiwii_com:resourceloader:filter:minify-css:7:ae3fa4570b5ac0c6cf7b3776c8ae4d6f */</style><meta name="ResourceLoaderDynamicStyles" content="">
+<style>a:lang(ar),a:lang(kk-arab),a:lang(mzn),a:lang(ps),a:lang(ur){text-decoration:none}
+/* cache key: multiwii_com:resourceloader:filter:minify-css:7:6383d5aaad06a034adc65f6932ecf69a */</style>
+<script src="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/load_003.php"></script><script src="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/load.php"></script>
+<script>if(window.mw){
+mw.config.set({"wgCanonicalNamespace":"","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":0,"wgPageName":"Multiwii_Serial_Protocol","wgTitle":"Multiwii Serial Protocol","wgCurRevisionId":680,"wgRevisionId":680,"wgArticleId":168,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":[],"wgBreakFrames":false,"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgMonthNamesShort":["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"wgRelevantPageName":"Multiwii_Serial_Protocol","wgRelevantArticleId":168,"wgIsProbablyEditable":false,"wgRestrictionEdit":[],"wgRestrictionMove":[],"wgWikiEditorEnabledModules":{"toolbar":false,"dialogs":false,"hidesig":true,"templateEditor":false,"templates":false,"preview":false,"previewDialog":false,"publish":false,"toc":false}});
+}</script><script>if(window.mw){
+mw.loader.implement("user.options",function($,jQuery){mw.user.options.set({"variant":"en"});});mw.loader.implement("user.tokens",function($,jQuery){mw.user.tokens.set({"editToken":"+\\","patrolToken":"+\\","watchToken":"+\\"});});
+/* cache key: multiwii_com:resourceloader:filter:minify-js:7:a5c52c063dc436c1ca7c9f456936a5e9 */
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.page.startup","mediawiki.legacy.wikibits","mediawiki.legacy.ajax","skins.vector.js"]);
+}</script><script src="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/load_002.php"></script>
+<!--[if lt IE 7]><style type="text/css">body{behavior:url("/wiki/skins/Vector/csshover.min.htc")}</style><![endif]-->
+<link href="data:text/css,%3Ais(%5Bid*%3D'google_ads_iframe'%5D%2C%5Bid*%3D'taboola-'%5D%2C.taboolaHeight%2C.taboola-placeholder%2C%23credential_picker_container%2C%23credentials-picker-container%2C%23credential_picker_iframe%2C%5Bid*%3D'google-one-tap-iframe'%5D%2C%23google-one-tap-popup-container%2C.google-one-tap-modal-div%2C%23amp_floatingAdDiv%2C%23ez-content-blocker-container)%20%7Bdisplay%3Anone!important%3Bmin-height%3A0!important%3Bheight%3A0!important%3B%7D" rel="stylesheet" type="text/css"></head>
+<body class="mediawiki ltr sitedir-ltr ns-0 ns-subject page-Multiwii_Serial_Protocol skin-vector action-view">
+		<div id="mw-page-base" class="noprint"></div>
+		<div id="mw-head-base" class="noprint"></div>
+		<div id="content" class="mw-body" role="main">
+			<a id="top"></a>
+
+						<div class="mw-indicators">
+</div>
+			<h1 id="firstHeading" class="firstHeading" lang="en">Multiwii Serial Protocol</h1>
+						<div id="bodyContent" class="mw-body-content">
+									<div id="siteSub">From MultiWii</div>
+								<div id="contentSub"></div>
+												<div id="jump-to-nav" class="mw-jump">
+					Jump to:					<a href="#mw-head">navigation</a>, 					<a href="#p-search">search</a>
+				</div>
+				<div id="mw-content-text" lang="en" dir="ltr" class="mw-content-ltr"><p>A discussion on the MSP is in this thread: <a rel="nofollow" class="external free" href="http://www.multiwii.com/forum/viewtopic.php?f=8&amp;t=1516">http://www.multiwii.com/forum/viewtopic.php?f=8&amp;t=1516</a>
+</p><p>The general format of an MSP message is:
+</p><p>&lt;preamble&gt;,&lt;direction&gt;,&lt;size&gt;,&lt;command&gt;,<data>,&lt;crc&gt;
+</data></p><p>Where:
+</p><p>preamble = the ASCII characters '$M'
+</p><p>direction = the ASCII character '&lt;' if to the MWC or '&gt;' if from the MWC
+</p><p>size = number of data bytes, binary. Can be zero as in the case of a data request to the MWC
+</p><p>command = message_id as per the table below
+</p><p>data = as per the table below. UINT16 values are LSB first.
+</p><p>crc = XOR of &lt;size&gt;, &lt;command&gt; and each data byte into a zero'ed sum
+</p><p><br>
+</p>
+<table class="wikitable">
+<tbody><tr>
+<th>command</th>
+<th>message_id</th>
+<th>direction</th>
+<th>data</th>
+<th>type</th>
+<th>comment
+</th></tr>
+<tr>
+<td>MSP_IDENT</td>
+<td>100</td>
+<td>FC →</td>
+<td>VERSION</td>
+<td>UINT 8</td>
+<td>version of MultiWii
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MULTITYPE</td>
+<td>UINT 8</td>
+<td>type of multi:
+<p>TRI/QUADP,QUADX,BI,GIMBAL,Y6,HEX6,FLYING_WING,Y4,HEX6X,OCTOX8,
+OCTOFLATP,OCTOFLATX,AIRPLANE,HELI_120,HELI_90,VTAIL4,HEX6H,SINGLECOPTER,DUALCOPTER
+</p>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MSP_VERSION</td>
+<td>UINT 8</td>
+<td>not used currently
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>capability</td>
+<td>UINT 32</td>
+<td>A 32 bit variable to indicate capability of FC board.
+<p>Currently,  BIND button is used on first bit, DYNBAL on second, FLAP on third
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_STATUS</td>
+<td>101</td>
+<td>FC →</td>
+<td>cycleTime</td>
+<td>UINT 16</td>
+<td>unit: microseconds
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>i2c_errors_count</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>sensor</td>
+<td>UINT 16</td>
+<td>BARO&lt;&lt;1|MAG&lt;&lt;2|GPS&lt;&lt;3|SONAR&lt;&lt;4
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>flag</td>
+<td>UINT 32</td>
+<td>a bit variable to indicate which BOX are active, the bit position depends on the BOX which are configured
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>global_conf.currentSet</td>
+<td>UINT 8</td>
+<td>to indicate the current configuration setting
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_RAW_IMU</td>
+<td>102</td>
+<td>FC →</td>
+<td>accx</td>
+<td>INT 16</td>
+<td>unit: it depends on ACC sensor and is based on ACC_1G definition
+<p>MMA7455 64 / MMA8451Q 512 / ADXL345 265 / BMA180 255 / BMA020 63 / 
+NUNCHUCK 200 / LIS3LV02 256 / LSM303DLx_ACC 256 / MPU6050 512 / LSM330 
+256
+</p>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>accy</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>accz</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>gyrx</td>
+<td>INT 16</td>
+<td>unit: it depends on GYRO sensor.
+<p>For MPU6050, 1 unit = 1/4.096 deg/s
+</p>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>gyry</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>gyrz</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>magx</td>
+<td>INT 16</td>
+<td>unit: it depends on MAG sensor.
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>magy</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>magz</td>
+<td>INT 16</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SERVO</td>
+<td>103</td>
+<td>FC →</td>
+<td>Servo*8</td>
+<td>16 x UINT 16</td>
+<td>Range [1000;2000]
+<p>The servo order depends on multi type
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_MOTOR</td>
+<td>104</td>
+<td>FC →</td>
+<td>Motor*8</td>
+<td>16 x UINT 16</td>
+<td>Range [1000;2000]
+<p>The motor order depends on multi type
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_MOTOR</td>
+<td>214</td>
+<td>→ FC</td>
+<td>Motor*8</td>
+<td>16 x UINT 16</td>
+<td>use to set individual motor value (to be used only with DYNBALANCE config)
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_RC</td>
+<td>105</td>
+<td>FC →</td>
+<td>rcData[RC_CHANS]</td>
+<td>16 x UINT 16</td>
+<td>Range [1000;2000]
+<p>ROLL/PITCH/YAW/THROTTLE/AUX1/AUX2/AUX3AUX4
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_RAW_RC</td>
+<td>200</td>
+<td>→ FC</td>
+<td>rcData[RC_CHANS]</td>
+<td>16 x UINT 16</td>
+<td>Range [1000;2000]
+<p>ROLL/PITCH/YAW/THROTTLE/AUX1/AUX2/AUX3AUX4
+</p><p>This request is used to inject RC channel via MSP.
+Each chan overrides legacy RX as long as it is refreshed at least every second. See UART radio projects for more details.
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_RAW_GPS</td>
+<td>106</td>
+<td>FC →</td>
+<td>GPS_FIX</td>
+<td>UINT 8</td>
+<td>0 or 1
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_numSat</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_coord[LAT]</td>
+<td>UINT 32</td>
+<td>1 / 10 000 000 deg
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_coord[LON]</td>
+<td>UINT 32</td>
+<td>1 / 10 000 000 deg
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_altitude</td>
+<td>UINT 16</td>
+<td>meter
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_speed</td>
+<td>UINT 16</td>
+<td>cm/s
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_ground_course</td>
+<td>UINT 16</td>
+<td>unit: degree*10
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_RAW_GPS</td>
+<td>201</td>
+<td>→ FC</td>
+<td>GPS_FIX</td>
+<td>UINT 8</td>
+<td>this request is used to inject GPS data (annex GPS device or simulation purpose)
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_numSat</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_coord[LAT]</td>
+<td>UINT 32</td>
+<td>1 / 10 000 000 deg
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_coord[LON]</td>
+<td>UINT 32</td>
+<td>1 / 10 000 000 deg
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_altitude</td>
+<td>UINT 16</td>
+<td>meter
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_speed</td>
+<td>UINT 16</td>
+<td>cm/s
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_COMP_GPS</td>
+<td>107</td>
+<td>FC →</td>
+<td>GPS_distanceToHome</td>
+<td>UINT 16</td>
+<td>unit: meter
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_directionToHome</td>
+<td>UINT 16</td>
+<td>unit: degree (range [-180;+180])
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>GPS_update</td>
+<td>UINT 8</td>
+<td>a flag to indicate when a new GPS frame is received (the GPS fix is not dependent of this)
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_ATTITUDE</td>
+<td>108</td>
+<td>FC →</td>
+<td>angx</td>
+<td>INT 16</td>
+<td>Range [-1800;1800] (unit: 1/10 degree)
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>angy</td>
+<td>INT 16</td>
+<td>Range [-900;900] (unit: 1/10 degree)
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>heading</td>
+<td>INT 16</td>
+<td>Range [-180;180]
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_ALTITUDE</td>
+<td>109</td>
+<td>FC →</td>
+<td>EstAlt</td>
+<td>INT 32</td>
+<td>cm
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>vario</td>
+<td>INT 16</td>
+<td>cm/s
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_ANALOG</td>
+<td>110</td>
+<td>FC →</td>
+<td>vbat</td>
+<td>UINT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>intPowerMeterSum</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>rssi</td>
+<td>UINT 16</td>
+<td>range: [0;1023]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>amperage</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_RC_TUNING</td>
+<td>111</td>
+<td>FC →</td>
+<td>byteRC_RATE</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteRC_EXPO</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteRollPitchRate</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteYawRate</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteDynThrPID</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteThrottle_MID</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteThrottle_EXPO</td>
+<td>UINT 8</td>
+<td>range [0;100]
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_RC_TUNING</td>
+<td>204</td>
+<td>→ FC</td>
+<td>byteRC_RATE</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteRC_EXPO</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteRollPitchRate</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteYawRate</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteDynThrPID</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteThrottle_MID</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>byteThrottle_EXPO</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_PID</td>
+<td>112</td>
+<td>FC →</td>
+<td>PIDITEMS x conf.pid[]</td>
+<td>3*PIDITEMS x UINT 8</td>
+<td>Currently, PIDITEMS is constant = 10
+<p>Order&nbsp;: ROLL / PITCH / YAW / ALT / POS / POSR / NAVR / LEVEL  /MAG / VEL
+VEL is not used
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_PID</td>
+<td>202</td>
+<td>→ FC</td>
+<td>PIDITEMS x conf.pid[]</td>
+<td>3*PIDITEMS x UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_BOX</td>
+<td>113</td>
+<td>FC →</td>
+<td>BOXITEMS x conf.activate[]</td>
+<td>BOXITEMS x UINT 16</td>
+<td>BOXITEMS number is dependant of multiwii configuration
+<p>The size of the message is enough to know the number of BOX
+For each BOX, there is a 16 bit variable which indicates the AUX1-&gt;AUX4 activation switch.
+Bit 1: AUX1 LOW state / bit 2: AUX1 MID state / bit 3: AUX1 HIGH state / bit 4: AUX2 LOW state ….. bit 13: AUX 4 HIGH state
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_BOX</td>
+<td>203</td>
+<td>→ FC</td>
+<td>BOXITEMS x conf.activate[]</td>
+<td>BOXITEMS x UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_MISC</td>
+<td>114</td>
+<td>FC →</td>
+<td>intPowerTrigger1</td>
+<td>UNIT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.minthrottle</td>
+<td>UNIT 16</td>
+<td> minimum throttle to run motor in idle state ( range [1000;2000] )
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MAXTHROTTLE</td>
+<td>UNIT 16</td>
+<td> maximum throttle ( range [1000;2000] )
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MINCOMMAND</td>
+<td>UNIT 16</td>
+<td> throttle at the lowest position ( range [1000;2000] , could be occasionally a little bit less than 1000 depending on ESCs)
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.failsafe_throttle</td>
+<td>UNIT 16</td>
+<td> should be set less than hover state ( range [1000;2000] )
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>plog.arm</td>
+<td>UNIT 16</td>
+<td>counter
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>plog.lifetime</td>
+<td>UNIT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.mag_declination</td>
+<td>UNIT 16</td>
+<td>magnetic declination   ( unit:1/10 degree )
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatscale</td>
+<td>UNIT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_warn1</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_warn2</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_crit</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_MISC</td>
+<td>207</td>
+<td>→ FC</td>
+<td>intPowerTrigger1</td>
+<td>UNIT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.minthrottle</td>
+<td>UNIT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MAXTHROTTLE</td>
+<td>UNIT 16</td>
+<td>not used currently as a set variable
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>MINCOMMAND</td>
+<td>UNIT 16</td>
+<td>not used currently as a set variable
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.failsafe_throttle</td>
+<td>UNIT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>plog.arm</td>
+<td>UNIT 16</td>
+<td>not used, it's here to have the same struct as get
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>plog.lifetime</td>
+<td>UNIT 32</td>
+<td>not used, it's here to have the same struct as get
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.mag_declination</td>
+<td>UNIT 16</td>
+<td>magnetic declination   ( unit:1/10 degree )
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatscale</td>
+<td>UNIT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_warn1</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_warn2</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>conf.vbatlevel_crit</td>
+<td>UNIT 8</td>
+<td>unit: 1/10 volt
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_MOTOR_PINS</td>
+<td>115</td>
+<td>FC →</td>
+<td>8*PWM_PIN</td>
+<td>8 x UNIT 8</td>
+<td>motor pin indication
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_BOXNAMES</td>
+<td>116</td>
+<td>FC →</td>
+<td>string of BOX items</td>
+<td>string</td>
+<td>all the configured CHECKBOX name separated by&nbsp;;
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_PIDNAMES</td>
+<td>117</td>
+<td>FC →</td>
+<td>string of PID items</td>
+<td>string</td>
+<td>all the PID name separated by&nbsp;;
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_WP</td>
+<td>118</td>
+<td>FC →</td>
+<td>wp_no</td>
+<td>UINT 8</td>
+<td>not fully implemented yet, works partially for HOME POSITION (wp 0) and HOLD position (wp 15)
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>lat</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>lon</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>AltHold</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>heading</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>time to stay</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>nav flag</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_WP</td>
+<td>209</td>
+<td>→ FC</td>
+<td>wp_no</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>lat</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>lon</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>AltHold</td>
+<td>UINT 32</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>heading</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>time to stay</td>
+<td>UINT 16</td>
+<td>
+</td></tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td>nav flag</td>
+<td>UINT 8</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_BOXIDS</td>
+<td>119</td>
+<td>FC →</td>
+<td>ID*CHECKBOXITEMS</td>
+<td>CHECKBOXITEMS x UINT 8</td>
+<td>each BOX (used or not) have a unique ID.
+<p>In order to retrieve the number of BOX and which BOX are in used, this request can be used.
+It is more efficient than retrieving BOX names if you know what BOX function is behing the ID.
+See enum MultiWii.cpp (0: ARM, 1 ANGLE, 2 HORIZON, …)
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SERVO_CONF</td>
+<td>120</td>
+<td>FC →</td>
+<td>8 x conf.servoConf[]</td>
+<td>8 x [UINT 16, UINT 16, UINT 16, UINT 8]</td>
+<td>struct servo_conf_ is 7 bytes length: min:2 / max:2 / middle:2 / rate:1
+<p>[1000;2000], [1000;2000], [1000;2000], [0;100]
+Special use:
+middle normal range is [1000;2000]
+If middle &lt; RC_CHANS =&gt; the relevant rc channel is the middle 
+position of the servo (usefull for gimbal where you wnt to control the 
+middle axis via a rc chan)
+</p><p>Depending on the servo use in multiwii type, rate is used to 
+reverse the direction of servo (first bit) or to set a proportional 
+range
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_SERVO_CONF</td>
+<td>212</td>
+<td>→ FC</td>
+<td>8 x conf.servoConf[]</td>
+<td>8 x [UINT 16, UINT 16, UINT 16, UINT 8]</td>
+<td>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_ACC_CALIBRATION</td>
+<td>205</td>
+<td>→ FC</td>
+<td>no param</td>
+<td></td>
+<td>used to calibrate the ACC
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_MAG_CALIBRATION</td>
+<td>206</td>
+<td>→ FC</td>
+<td>no param</td>
+<td></td>
+<td>used to calibrate the MAG
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_RESET_CONF</td>
+<td>208</td>
+<td>→ FC</td>
+<td>no param</td>
+<td></td>
+<td>reset all params to default
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SELECT_SETTING</td>
+<td>210</td>
+<td>→ FC</td>
+<td>global_conf.currentSet</td>
+<td>UINT 8</td>
+<td>select the setting configuration (you can set for instance different pid and rate)
+<p>Range: 0, 1 or 2
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_SET_HEAD</td>
+<td>211</td>
+<td>→ FC</td>
+<td>magHold</td>
+<td>INT 16</td>
+<td>Set a new head lock reference
+<p>Range [-180;+180]
+</p>
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_BIND</td>
+<td>240</td>
+<td>→ FC</td>
+<td>no param</td>
+<td></td>
+<td>Currently only uses to bind spektrum sttellites
+</td></tr>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th></th>
+<th>
+</th></tr>
+<tr>
+<td>MSP_EEPROM_WRITE</td>
+<td>250</td>
+<td>→ FC</td>
+<td>no param</td>
+<td></td>
+<td>write the settings to the eeprom
+</td></tr>
+
+<tr>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th> </th>
+<th>
+</th></tr></tbody></table>
+
+<!-- 
+NewPP limit report
+CPU time usage: 0.023 seconds
+Real time usage: 0.024 seconds
+Preprocessor visited node count: 1/1000000
+Preprocessor generated node count: 4/1000000
+Post‐expand include size: 0/2097152 bytes
+Template argument size: 0/2097152 bytes
+Highest expansion depth: 1/40
+Expensive parser function count: 0/100
+-->
+
+<!-- 
+Transclusion expansion time report (%,ms,calls,template)
+100.00%    0.000      1 - -total
+-->
+</div>									<div class="printfooter">
+						Retrieved from "<a dir="ltr" href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;oldid=680">http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;oldid=680</a>"					</div>
+													<div id="catlinks" class="catlinks catlinks-allhidden"></div>												<div class="visualClear"></div>
+							</div>
+		</div>
+		<div id="mw-navigation">
+			<h2>Navigation menu</h2>
+
+			<div id="mw-head">
+									<div id="p-personal" role="navigation" class="" aria-labelledby="p-personal-label">
+						<h3 id="p-personal-label">Personal tools</h3>
+						<ul>
+							<li id="pt-login"><a href="http://www.multiwii.com/wiki/index.php?title=Special:UserLogin&amp;returnto=Multiwii+Serial+Protocol" title="You are encouraged to log in; however, it is not mandatory [Alt+Shift+o]" accesskey="o">Log in</a></li>						</ul>
+					</div>
+									<div id="left-navigation">
+										<div id="p-namespaces" role="navigation" class="vectorTabs" aria-labelledby="p-namespaces-label">
+						<h3 id="p-namespaces-label">Namespaces</h3>
+						<ul>
+															<li id="ca-nstab-main" class="selected"><span><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol" title="View the content page [Alt+Shift+c]" accesskey="c">Page</a></span></li>
+															<li id="ca-talk"><span><a href="http://www.multiwii.com/wiki/index.php?title=Talk:Multiwii_Serial_Protocol" title="Discussion about the content page [Alt+Shift+t]" accesskey="t">Discussion</a></span></li>
+													</ul>
+					</div>
+										<div id="p-variants" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-variants-label">
+												<h3 id="p-variants-label" tabindex="0"><span>Variants</span><a href="#" tabindex="-1"></a></h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+									</div>
+				<div id="right-navigation">
+										<div id="p-views" role="navigation" class="vectorTabs" aria-labelledby="p-views-label">
+						<h3 id="p-views-label">Views</h3>
+						<ul>
+															<li id="ca-view" class="selected"><span><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol">Read</a></span></li>
+															<li id="ca-viewsource"><span><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;action=edit" title="This page is protected.
+You can view its source [Alt+Shift+e]" accesskey="e">View source</a></span></li>
+															<li id="ca-history" class="collapsible"><span><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;action=history" title="Past revisions of this page [Alt+Shift+h]" accesskey="h">View history</a></span></li>
+													</ul>
+					</div>
+										<div id="p-cactions" role="navigation" class="vectorMenu emptyPortlet" aria-labelledby="p-cactions-label">
+						<h3 id="p-cactions-label" tabindex="0"><span>More</span><a href="#" tabindex="-1"></a></h3>
+
+						<div class="menu">
+							<ul>
+															</ul>
+						</div>
+					</div>
+										<div id="p-search" role="search">
+						<h3>
+							<label for="searchInput">Search</label>
+						</h3>
+
+						<form action="/wiki/index.php" id="searchform">
+														<div id="simpleSearch">
+															<input type="search" name="search" placeholder="Search" title="Search MultiWii [Alt+Shift+f]" accesskey="f" id="searchInput" tabindex="1" autocomplete="off"><input type="hidden" value="Special:Search" name="title"><input type="submit" name="go" value="Go" title="Go to a page with this exact name if exists" id="searchButton" class="searchButton">								</div>
+						</form>
+					</div>
+									</div>
+			</div>
+			<div id="mw-panel">
+				<div id="p-logo" role="banner"><a class="mw-wiki-logo" href="http://www.multiwii.com/wiki/index.php?title=Main_Page" title="Visit the main page"></a></div>
+						<div class="portal" role="navigation" id="p-navigation" aria-labelledby="p-navigation-label">
+			<h3 id="p-navigation-label">Navigation</h3>
+
+			<div class="body">
+									<ul>
+													<li id="n-mainpage-description"><a href="http://www.multiwii.com/wiki/index.php?title=Main_Page" title="Visit the main page [Alt+Shift+z]" accesskey="z">Main page</a></li>
+													<li id="n-recentchanges"><a href="http://www.multiwii.com/wiki/index.php?title=Special:RecentChanges" title="A list of recent changes in the wiki [Alt+Shift+r]" accesskey="r">Recent changes</a></li>
+													<li id="n-randompage"><a href="http://www.multiwii.com/wiki/index.php?title=Special:Random" title="Load a random page [Alt+Shift+x]" accesskey="x">Random page</a></li>
+													<li id="n-help"><a href="https://www.mediawiki.org/wiki/Special:MyLanguage/Help:Contents" title="The place to find out">Help</a></li>
+											</ul>
+							</div>
+		</div>
+			<div class="portal" role="navigation" id="p-tb" aria-labelledby="p-tb-label">
+			<h3 id="p-tb-label">Tools</h3>
+
+			<div class="body">
+									<ul>
+													<li id="t-whatlinkshere"><a href="http://www.multiwii.com/wiki/index.php?title=Special:WhatLinksHere/Multiwii_Serial_Protocol" title="A list of all wiki pages that link here [Alt+Shift+j]" accesskey="j">What links here</a></li>
+													<li id="t-recentchangeslinked"><a href="http://www.multiwii.com/wiki/index.php?title=Special:RecentChangesLinked/Multiwii_Serial_Protocol" title="Recent changes in pages linked from this page [Alt+Shift+k]" accesskey="k">Related changes</a></li>
+													<li id="t-specialpages"><a href="http://www.multiwii.com/wiki/index.php?title=Special:SpecialPages" title="A list of all special pages [Alt+Shift+q]" accesskey="q">Special pages</a></li>
+													<li id="t-print"><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;printable=yes" rel="alternate" title="Printable version of this page [Alt+Shift+p]" accesskey="p">Printable version</a></li>
+													<li id="t-permalink"><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;oldid=680" title="Permanent link to this revision of the page">Permanent link</a></li>
+													<li id="t-info"><a href="http://www.multiwii.com/wiki/index.php?title=Multiwii_Serial_Protocol&amp;action=info" title="More information about this page">Page information</a></li>
+											</ul>
+							</div>
+		</div>
+				</div>
+		</div>
+		<div id="footer" role="contentinfo">
+							<ul id="footer-info">
+											<li id="footer-info-lastmod"> This page was last modified on 3 January 2015, at 11:21.</li>
+									</ul>
+							<ul id="footer-places">
+											<li id="footer-places-privacy"><a href="http://www.multiwii.com/wiki/index.php?title=MultiWii:Privacy_policy" title="MultiWii:Privacy policy">Privacy policy</a></li>
+											<li id="footer-places-about"><a href="http://www.multiwii.com/wiki/index.php?title=MultiWii:About" title="MultiWii:About">About MultiWii</a></li>
+											<li id="footer-places-disclaimer"><a href="http://www.multiwii.com/wiki/index.php?title=MultiWii:General_disclaimer" title="MultiWii:General disclaimer">Disclaimers</a></li>
+									</ul>
+										<ul id="footer-icons" class="noprint">
+											<li id="footer-poweredbyico">
+															<a href="http://www.mediawiki.org/"><img src="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="Multiwii%20Serial%20Protocol%20-%20MultiWii_files/poweredby_mediawiki_132x47.png 1.5x, Multiwii%20Serial%20Protocol%20-%20MultiWii_files/poweredby_mediawiki_176x62.png 2x" width="88" height="31"></a>
+													</li>
+									</ul>
+						<div style="clear:both"></div>
+		</div>
+		<script>if(window.jQuery)jQuery.ready();</script><script>if(window.mw){
+mw.loader.state({"site":"ready","user":"ready","user.groups":"ready"});
+}</script>
+<script>if(window.mw){
+mw.loader.load(["mediawiki.action.view.postEdit","mediawiki.user","mediawiki.hidpi","mediawiki.page.ready","mediawiki.searchSuggest"],null,true);
+}</script>
+<script>if(window.mw){
+mw.config.set({"wgBackendResponseTime":83});
+}</script>
+	
+
+<div style="display: none; font-size: 13.3333px;" class="suggestions"><div class="suggestions-results"></div><div class="suggestions-special"></div></div></body></html>
