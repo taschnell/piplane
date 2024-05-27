@@ -1,10 +1,12 @@
 import multiprocessing
 import crsf_read
 import servo_test
+import pwm_motor
+import dshot_motor
 
 def main():
     def run_servo_test():
-        servo_test.main()
+        dshot_motor.main()
 
     def run_crsf_read():
         crsf_read.main()
