@@ -1,45 +1,45 @@
+# SPDX-FileCopyrightText: 2020 Bryan Siepert, written for Adafruit Industries
+#
+# SPDX-License-Identifier: Unlicense
 import time
-import rclpy
-from rclpy.node import Node
+import board
+import busio
+from adafruit_bno08x import (
+    BNO_REPORT_ACCELEROMETER,
+    BNO_REPORT_GYROSCOPE,
+    BNO_REPORT_MAGNETOMETER,
+    BNO_REPORT_ROTATION_VECTOR,
+)
+from adafruit_bno08x.i2c import BNO08X_I2C
 
-from sensor_msgs.msg import Imu  # Import the Imu message
+i2c = busio.I2C(board.SCL, board.SDA)
+bno = BNO08X_I2C(i2c)
 
-class ImuPublisher(Node):
+bno.enable_feature(BNO_REPORT_ACCELEROMETER)
+bno.enable_feature(BNO_REPORT_GYROSCOPE)
+bno.enable_feature(BNO_REPORT_MAGNETOMETER)
+bno.enable_feature(BNO_REPORT_ROTATION_VECTOR)
 
-    def __init__(self):
-        super().__init__('imu_publisher')
-        self.imu_pub = self.create_publisher(Imu, '/imu_data', 10)  # Topic: /imu_data, queue size: 10
-        self.timer = self.create_timer(0.01, self.publish_data)  # Publish every 0.01 seconds
+while True:
+    time.sleep(0.01)
+    print("Acceleration:")
+    accel_x, accel_y, accel_z = bno.acceleration  # pylint:disable=no-member
+    print("ACCEL:\tX: %0.6f  Y: %0.6f Z: %0.6f  m/s^2" % (accel_x, accel_y, accel_z))
+    print("")
 
-        # Replace with your I2C initialization code (assuming it's already done)
-        # i2c = busio.I2C(board.SCL, board.SDA)
-        # bno = BNO08X_I2C(i2c)
-        # ... sensor initialization
+    print("Gyro:")
+    gyro_x, gyro_y, gyro_z = bno.gyro  # pylint:disable=no-member
+    print("GYRO:\tX: %0.6f  Y: %0.6f Z: %0.6f rads/s" % (gyro_x, gyro_y, gyro_z))
+    print("")
 
-    def publish_data(self):
-        imu_msg = Imu()
+    print("Magnetometer:")
+    mag_x, mag_y, mag_z = bno.magnetic  # pylint:disable=no-member
+    print("X: %0.6f  Y: %0.6f Z: %0.6f uT" % (mag_x, mag_y, mag_z))
+    print("")
 
-        # Read sensor data from BNO08X
-        accel_x, accel_y, accel_z = self.read_accel()  # Replace with your sensor reading function
-        gyro_x, gyro_y, gyro_z = self.read_gyro()  # Replace with your sensor reading function
-        # ... similar for quaternion
-
-        # Fill the Imu message
-        imu_msg.linear_acceleration.x = accel_x
-        imu_msg.linear_acceleration.y = accel_y
-        imu_msg.linear_acceleration.z = accel_z
-        imu_msg.angular_velocity.x = gyro_x
-        imu_msg.angular_velocity.y = gyro_y
-        imu_msg.angular_velocity.z = gyro_z
-        # ... similar for quaternion data (if using custom message)
-
-        self.imu_pub.publish(imu_msg)
-
-def main():
-    rclpy.init()
-    node = ImuPublisher()
-    rclpy.spin(node)
-    rclpy.shutdown()
-
-if __name__ == '__main__':
-    main()
+    print("Rotation Vector Quaternion:")
+    quat_i, quat_j, quat_k, quat_real = bno.quaternion  # pylint:disable=no-member
+    print(
+        "ROTATE VECTOR:\tI: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
+    )
+    print("")
