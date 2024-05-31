@@ -7,8 +7,9 @@ import sys
 
 # Ros2
 import rclpy
-from rclpy.node import Node 
+from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
+
 CRSF_SYNC = 0xC8
 
 
@@ -164,7 +165,6 @@ def handleCrsfPacket(ptype, data):
         vspd = int.from_bytes(data[3:5], byteorder="big", signed=True) / 10.0
         print(f"VSpd: {vspd:0.1f}m/s")
     elif ptype == PacketsTypes.RC_CHANNELS_PACKED:
-        # print(f"Channels: {len(interpret_rc_channels(data[3:25]))}")
         return interpret_rc_channels(data[3:25])
     else:
         packet = " ".join(map(hex, data))
@@ -174,11 +174,13 @@ def handleCrsfPacket(ptype, data):
 class CrsfNode(Node):
     def __init__(self):
         super().__init__("crsf_node")
-        self.channel_publisher_ = self.create_publisher(Int16MultiArray, "crsf_channels_data", 1)
+        self.channel_publisher_ = self.create_publisher(
+            Int16MultiArray, "crsf_channels_data", 1
+        )
 
     def publish_channel_data(self, data):
         msg = Int16MultiArray()
-        msg.data = (data)
+        msg.data = data
         self.channel_publisher_.publish(msg)
 
 
@@ -188,6 +190,7 @@ def main(args=None):
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-P", "--port", default="/dev/ttyAMA0", required=False)
+    # CRSF Either uses 400k or 420k, however most Flight controllers expect 420k, so we'll do the same
     parser.add_argument("-b", "--baud", default=420000, required=False)
     parser.add_argument(
         "-t",
@@ -202,7 +205,6 @@ def main(args=None):
     with serial.Serial(args.port, args.baud, timeout=2) as ser:
         input = bytearray()
         counter = 0
-        start = time.time()
         try:
             while rclpy.ok():
                 rclpy.spin_once(node, timeout_sec=0.005)
@@ -213,7 +215,7 @@ def main(args=None):
                 #         ser.write(
                 #             channelsCrsfToChannelsPacket([992 for ch in range(16)])
                 #         )
-                    # time.sleep(0.002)
+                # time.sleep(0.002)
 
                 if len(input) > 2:
                     # This simple parser works with malformed CRSF streams
@@ -234,8 +236,7 @@ def main(args=None):
                             if int_list:
                                 node.publish_channel_data(int_list)
                             counter += 1
-                            # print(int_list)
-                            # print(time.time()-start, counter/(time.time()-start))
+
 
         except Exception as e:
             print(e)
