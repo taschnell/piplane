@@ -1,5 +1,5 @@
-# PiPlane:
-A DIY FPV Plane with Raspberry Pi, ELRS/CRSF, MSD Video, IC12 Servo Control, Limited Autopilot Features
+# PiDrone:
+A DIY FPV *DRONE* with Raspberry Pi, ELRS/CRSF, MSD Video, Autopilot Features
 
 ## Project Overview
 
