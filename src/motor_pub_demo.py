@@ -1,3 +1,7 @@
+"""
+SETUP TO RUN PICO:
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0 baudrate=115200
+"""
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int32MultiArray

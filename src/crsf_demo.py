@@ -13,7 +13,7 @@ class Int16MultiArrayPublisher(Node):
     def timer_callback(self):
         msg = Int16MultiArray()
         # Fill the array with random integers between 988 and 2500
-        msg.data = [(1300) for _ in range(16)]
+        msg.data = [(random.randint(988,2400)) for _ in range(16)]
         self.publisher_.publish(msg)
         self.get_logger().info(f'Publishing: {msg.data}')
 
