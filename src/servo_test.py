@@ -12,7 +12,7 @@ class ServoControlNode(Node):
             Int16MultiArray,
             'crsf_channels_data',
             self.listener_callback,
-            10
+            1
         )
         self.subscription  # prevent unused variable warning
         self.kit = ServoKit(channels=16)

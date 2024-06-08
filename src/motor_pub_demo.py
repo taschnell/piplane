@@ -4,13 +4,13 @@ ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0 baudrate=1152
 """
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int16MultiArray
 
 class IntArrayPublisher(Node):
 
     def __init__(self):
         super().__init__('motor_array')
-        self.publisher_ = self.create_publisher(Int32MultiArray, 'motor_array', 10)
+        self.publisher_ = self.create_publisher(Int16MultiArray, 'motor_array', 10)
 
         # Get user input once during initialization
         self.target_values = []
@@ -34,7 +34,7 @@ class IntArrayPublisher(Node):
         self.timer = self.create_timer(0.1, self.timer_callback)
 
     def timer_callback(self):
-        array = Int32MultiArray()
+        array = Int16MultiArray()
 
         # Gradually increase each motor value to the target value
         

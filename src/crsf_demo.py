@@ -6,7 +6,7 @@ import random
 class Int16MultiArrayPublisher(Node):
     def __init__(self):
         super().__init__('int16_multi_array_publisher')
-        self.publisher_ = self.create_publisher(Int16MultiArray, 'crsf_channels_data', 10)
+        self.publisher_ = self.create_publisher(Int16MultiArray, 'crsf_channels_data', 1)
         timer_period = 0.01  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
 

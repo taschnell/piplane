@@ -20,7 +20,7 @@ class IntArrayPublisher(Node):
             Int16MultiArray,
             'crsf_channels_data',
             self.crsf_callback,
-            10
+            1
         )
         self.crsf_channels = [0] * 16
 
@@ -38,7 +38,7 @@ class IntArrayPublisher(Node):
 
         array.data = self.current_values
         self.publisher_.publish(array)
-        # self.get_logger().info(f'Publishing: {array.data}')
+        self.get_logger().info(f'Publishing: {array.data}')
 
     def exponential_mapping(self, value):
         normalized_value = (value - 988) / (2012 - 988)
