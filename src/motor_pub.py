@@ -1,6 +1,9 @@
 """
 SETUP TO RUN PICO:
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0 baudrate=115200
+
+TESTER:
+ros2 topic pub /motor_array std_msgs/msg/Int16MultiArray "{data: [0, 0, 0, 0]}"
 """
 import rclpy
 from rclpy.node import Node
@@ -10,11 +13,11 @@ class IntArrayPublisher(Node):
 
     def __init__(self):
         super().__init__('motor_array')
-        self.publisher_ = self.create_publisher(Int16MultiArray, 'motor_array', 10)
+        self.publisher_ = self.create_publisher(Int16MultiArray, 'motor_array', 1)
 
         self.current_values = [0] * 4
 
-        self.timer = self.create_timer(0.001, self.timer_callback)
+        self.timer = self.create_timer(0.01, self.timer_callback)
 
         self.subscription = self.create_subscription(
             Int16MultiArray,
