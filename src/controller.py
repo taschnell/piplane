@@ -3,30 +3,26 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
 
-
-class ChannelMap(IntEnum):
-    """
-    Some Info on how the channels are used by the drone.
-    Channels 12-15 are unused, however support could be added
-    If setting up ELRS TX, note that OpenTX and EdgeTX start at 1 not zero
-        IE: 0 --> 1, 1 --> 2, etc.
-    """
-
-    # MID IS 1500
-    ROLL = 0  # Continuous | 988 - 2011
-    PITCH = 1  # Continuous | 988 - 2011
-    THROTTLE = 2  # Continuous | 988 - 2011
-    YAW = 3  # Continuous | 988 - 2011
-    ARM = 4  # Two Modes | 988, 2011
-    MODE = 5  # Three Modes | 988, 1500, 2011
-    RIGHT_SWITCH = 6  # Two Modes | 988, 2011
-    RIGHT_SWITCH_2 = 7  # Three Modes | 988, 1500, 2011
-    BUTTON_1 = 8  # OFF/ON | 988, 2011
-    BUTTON_2 = 9  # OFF/ON | 988, 2011
-    BUTTON_3 = 10  # OFF/ON | 988, 2011
-    BUTTON_4 = 11  # OFF/ON | 988, 2011
-    # Channels 12-15 UNUSED
-
+"""
+Some Info on how the channels are used by the drone.
+Channels 12-15 are unused, however support could be added
+If setting up ELRS TX, note that OpenTX and EdgeTX start at 1 not zero
+    IE: 0 --> 1, 1 --> 2, etc.
+"""
+# MID IS 1500
+ROLL = 0  # Continuous | 988 - 2011
+PITCH = 1  # Continuous | 988 - 2011
+THROTTLE = 2  # Continuous | 988 - 2011
+YAW = 3  # Continuous | 988 - 2011
+ARM = 4  # Two Modes | 988, 2011
+MODE = 5  # Three Modes | 988, 1500, 2011
+RIGHT_SWITCH = 6  # Two Modes | 988, 2011
+RIGHT_SWITCH_2 = 7  # Three Modes | 988, 1500, 2011
+BUTTON_1 = 8  # OFF/ON | 988, 2011
+BUTTON_2 = 9  # OFF/ON | 988, 2011
+BUTTON_3 = 10  # OFF/ON | 988, 2011
+BUTTON_4 = 11  # OFF/ON | 988, 2011
+# Channels 12-15 UNUSED
 
 class MotorMap(IntEnum):
     MOTOR_1 = 0
@@ -58,16 +54,16 @@ class Throttle_Publisher(Node):
         array = Int16MultiArray()
 
         # Will only ARM if throttle is zero
-        if not self.ARMED and self.crsf_channels[ChannelMap.THROTTLE] == 988:
-            self.ARMED = self.crsf_channels[ChannelMap.ARM] == 2011
-        elif self.ARMED and self.crsf_channels[ChannelMap.ARM] == 988:
+        if not self.ARMED and self.crsf_channels[THROTTLE] == 988:
+            self.ARMED = self.crsf_channels[ARM] == 2011
+        elif self.ARMED and self.crsf_channels[ARM] == 988:
             self.ARMED = False
 
         if self.ARMED:
-            roll_value = self.crsf_channels[ChannelMap.ROLL]
-            pitch_value = self.crsf_channels[ChannelMap.PITCH]
-            yaw_value = self.crsf_channels[ChannelMap.YAW]
-            throttle_value = self.crsf_channels[ChannelMap.THROTTLE]
+            roll_value = self.crsf_channels[ROLL]
+            pitch_value = self.crsf_channels[PITCH]
+            yaw_value = self.crsf_channels[YAW]
+            throttle_value = self.crsf_channels[THROTTLE]
             mapped_throttle_value = self.exponential_mapping(throttle_value)
 
             self.current_values = [mapped_throttle_value] * 4
@@ -92,39 +88,35 @@ class Throttle_Publisher(Node):
         expo_value = normalized_value**2
         return int(expo_value * 2047)
 
-    def percent_map(self, value):
-        # Define the input and output ranges
+    def percent_map(self, value, exponent=2):
+        """Now with EXPO"""
         input_range = (988, 1500, 2012)
         output_range = (-15, 0, 15)
 
-        # Check if the input value is within the specified range
         if not input_range[0] <= value <= input_range[-1]:
-            raise ValueError(
-                f"Input value {value} is out of the range [{input_range[0]}, {input_range[-1]}]"
-            )
+            raise ValueError(f"Input value {value} is out of the range [{input_range[0]}, {input_range[-1]}]")
 
-        # Compute the output value based on linear interpolation
         if value <= input_range[1]:
-            slope = (output_range[1] - output_range[0]) / (
-                input_range[1] - input_range[0]
-            )
-            output_value = output_range[0] + slope * (value - input_range[0])
+            norm_value = (value - input_range[1]) / (input_range[1] - input_range[0])
         else:
-            slope = (output_range[2] - output_range[1]) / (
-                input_range[2] - input_range[1]
-            )
-            output_value = output_range[1] + slope * (value - input_range[1])
+            norm_value = (value - input_range[1]) / (input_range[2] - input_range[1])
 
-        return output_value / 100.0  # Convert to percentage
+        if norm_value < 0:
+            mapped_value = output_range[1] + (output_range[0] - output_range[1]) * (abs(norm_value) ** exponent)
+        else:
+            mapped_value = output_range[1] + (output_range[2] - output_range[1]) * (norm_value ** exponent)
+
+        return mapped_value / 100.0
+
 
 
     def throttle_transformation(self):
         """
         I'll document this eventually
         """
-        roll_per = self.percent_map(self.crsf_channels[ChannelMap.ROLL])
-        pitch_per = self.percent_map(self.crsf_channels[ChannelMap.PITCH])
-        yaw_per = self.percent_map(self.crsf_channels[ChannelMap.YAW])
+        roll_per = self.percent_map(self.crsf_channels[ROLL])
+        pitch_per = self.percent_map(self.crsf_channels[PITCH])
+        yaw_per = self.percent_map(self.crsf_channels[YAW])
 
         # Note this works because all throttle values are initially the same
         roll_vals = round(self.current_values[MotorMap.MOTOR_1] * roll_per)
