@@ -3,6 +3,7 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
 
+
 class ChannelMap(IntEnum):
     """
     Some Info on how the channels are used by the drone.
@@ -10,36 +11,42 @@ class ChannelMap(IntEnum):
     If setting up ELRS TX, note that OpenTX and EdgeTX start at 1 not zero
         IE: 0 --> 1, 1 --> 2, etc.
     """
-    ROLL = 0 # Continuous | 988 - 2011
-    PITCH = 1 # Continuous | 988 - 2011
-    THROTTLE = 2 # Continuous | 988 - 2011
-    YAW = 3 # Continuous | 988 - 2011
-    ARM = 4 # Two Modes | 988, 2011
-    MODE = 5 # Three Modes | 988, 1500, 2011
-    RIGHT_SWITCH = 6 # Two Modes | 988, 2011
-    RIGHT_SWITCH_2 = 7 # Three Modes | 988, 1500, 2011
-    BUTTON_1 = 8 # OFF/ON | 988, 2011
-    BUTTON_2 = 9 # OFF/ON | 988, 2011
-    BUTTON_3 = 10 # OFF/ON | 988, 2011
-    BUTTON_4 = 11 # OFF/ON | 988, 2011
+
+    # MID IS 1500
+    ROLL = 0  # Continuous | 988 - 2011
+    PITCH = 1  # Continuous | 988 - 2011
+    THROTTLE = 2  # Continuous | 988 - 2011
+    YAW = 3  # Continuous | 988 - 2011
+    ARM = 4  # Two Modes | 988, 2011
+    MODE = 5  # Three Modes | 988, 1500, 2011
+    RIGHT_SWITCH = 6  # Two Modes | 988, 2011
+    RIGHT_SWITCH_2 = 7  # Three Modes | 988, 1500, 2011
+    BUTTON_1 = 8  # OFF/ON | 988, 2011
+    BUTTON_2 = 9  # OFF/ON | 988, 2011
+    BUTTON_3 = 10  # OFF/ON | 988, 2011
+    BUTTON_4 = 11  # OFF/ON | 988, 2011
     # Channels 12-15 UNUSED
+
+
+class MotorMap(IntEnum):
+    MOTOR_1 = 0
+    MOTOR_2 = 1
+    MOTOR_3 = 2
+    MOTOR_4 = 3
 
 
 class Throttle_Publisher(Node):
 
     def __init__(self):
-        super().__init__('motor_array')
-        self.publisher_ = self.create_publisher(Int16MultiArray, 'motor_array', 1)
+        super().__init__("motor_array")
+        self.publisher_ = self.create_publisher(Int16MultiArray, "motor_array", 1)
 
         self.current_values = [0] * 4
 
         self.timer = self.create_timer(0.01, self.timer_callback)
 
         self.subscription = self.create_subscription(
-            Int16MultiArray,
-            'crsf_channels_data',
-            self.crsf_callback,
-            1
+            Int16MultiArray, "crsf_channels_data", self.crsf_callback, 1
         )
         self.crsf_channels = [0] * 16
         self.ARMED = False
@@ -52,28 +59,91 @@ class Throttle_Publisher(Node):
 
         # Will only ARM if throttle is zero
         if not self.ARMED and self.crsf_channels[ChannelMap.THROTTLE] == 988:
-           self.ARMED = self.crsf_channels[ChannelMap.ARM] == 2011
+            self.ARMED = self.crsf_channels[ChannelMap.ARM] == 2011
         elif self.ARMED and self.crsf_channels[ChannelMap.ARM] == 988:
             self.ARMED = False
-        
+
         if self.ARMED:
-            throttle_value = self.crsf_channels[2]
+            roll_value = self.crsf_channels[ChannelMap.ROLL]
+            pitch_value = self.crsf_channels[ChannelMap.PITCH]
+            yaw_value = self.crsf_channels[ChannelMap.YAW]
+            throttle_value = self.crsf_channels[ChannelMap.THROTTLE]
             mapped_throttle_value = self.exponential_mapping(throttle_value)
+
             self.current_values = [mapped_throttle_value] * 4
+            self.throttle_transformation()
+
+            for i in range(4):
+                if self.current_values[i] > 2047:
+                    self.current_values[i] = 2047
+
             array.data = self.current_values
             self.publisher_.publish(array)
-            self.get_logger().info(f'Publishing: {array.data}')
-        
-        else: 
-            self.current_values = [0,0,0,0]
+            self.get_logger().info(f"Publishing: {array.data}")
+
+        else:
+            self.current_values = [0, 0, 0, 0]
             array.data = self.current_values
             self.publisher_.publish(array)
-            self.get_logger().info(f'Publishing: {array.data}, NOT ARMED')
+            self.get_logger().info(f"Publishing: {array.data}, NOT ARMED")
 
     def exponential_mapping(self, value):
         normalized_value = (value - 988) / (2012 - 988)
-        expo_value = normalized_value ** 2
+        expo_value = normalized_value**2
         return int(expo_value * 2047)
+
+    def percent_map(self, value):
+        # Define the input and output ranges
+        input_range = (988, 1500, 2012)
+        output_range = (-15, 0, 15)
+
+        # Check if the input value is within the specified range
+        if not input_range[0] <= value <= input_range[-1]:
+            raise ValueError(
+                f"Input value {value} is out of the range [{input_range[0]}, {input_range[-1]}]"
+            )
+
+        # Compute the output value based on linear interpolation
+        if value <= input_range[1]:
+            slope = (output_range[1] - output_range[0]) / (
+                input_range[1] - input_range[0]
+            )
+            output_value = output_range[0] + slope * (value - input_range[0])
+        else:
+            slope = (output_range[2] - output_range[1]) / (
+                input_range[2] - input_range[1]
+            )
+            output_value = output_range[1] + slope * (value - input_range[1])
+
+        return output_value / 100.0  # Convert to percentage
+
+
+    def throttle_transformation(self):
+        """
+        I'll document this eventually
+        """
+        roll_per = self.percent_map(self.crsf_channels[ChannelMap.ROLL])
+        pitch_per = self.percent_map(self.crsf_channels[ChannelMap.PITCH])
+        yaw_per = self.percent_map(self.crsf_channels[ChannelMap.YAW])
+
+        # Note this works because all throttle values are initially the same
+        roll_vals = round(self.current_values[MotorMap.MOTOR_1] * roll_per)
+        pitch_vals = round(self.current_values[MotorMap.MOTOR_1] * pitch_per)
+        yaw_vals = round(self.current_values[MotorMap.MOTOR_1] * yaw_per)
+
+        self.current_values[MotorMap.MOTOR_1] = (
+            self.current_values[MotorMap.MOTOR_1] - roll_vals + pitch_vals + yaw_vals
+        )
+        self.current_values[MotorMap.MOTOR_2] = (
+            self.current_values[MotorMap.MOTOR_2] - roll_vals - pitch_vals - yaw_vals
+        )
+        self.current_values[MotorMap.MOTOR_3] = (
+            self.current_values[MotorMap.MOTOR_3] + roll_vals + pitch_vals - yaw_vals
+        )
+        self.current_values[MotorMap.MOTOR_4] = (
+            self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals + yaw_vals
+        )
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -86,5 +156,6 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
