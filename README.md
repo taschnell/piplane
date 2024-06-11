@@ -1,25 +1,28 @@
-# PiDrone:
-A DIY FPV *DRONE* with Raspberry Pi, ELRS/CRSF, MSD Video, Autopilot Features
+# PiPlane/PiDrone:
+A DIY FPV *DRONE/PLANE* with Raspberry Pi, ELRS/CRSF, Video, & Autopilot Features
 
-## Project Overview
-
-A Personal Project to create a simplified FC software for a Raspberry Pi. Inspired by INAV and Betaflight.
-
-- **Radio Protocol:** ELRS or CRSF (Crossfire) for low-latency, reliable communication
-- **Flight Controller:** Raspberry Pi 5 FC
-- **Servos:** IC12 servos and motors for precise control of the aircraft's surfaces
-- **VTX:** MSD VTX Support, potentially using Open VTX
-- **Sensors:** Serial GPS, Accelerometer, Magnetometer (Compass), ETC 
+A Personal Project to create a simplified FC software for a Raspberry Pi. Inspired by INAV and Betaflight
 
 ## Hardware Requirements
-- Raspberry Pi-5
-- ELRS TX and RX
-  - Run at 100 HZ to save CPU Time
-- Bo085
-  -IMU
-  -MAG <-- Proably to garbled by nearby em interference.
-- Raspberry Pi Pico
-- etc.
+
+- **Radio Protocol:** ELRS & CRSF (Crossfire) for low-latency, reliable communication
+  - Bandit BR3 915/868MHz Dual High Sensitivity T Antenna ELRS Receiver
+- **Flight Controller:** Raspberry Pi 5 FC
+  - Raspberry Pi Pico, Motor Control
+- **Motors:** DSHOT600 ESC and Motor System
+  - Speedybee 50A F4 128K BLHeli_32
+  - Hyperlite 2807.5, 1122KV
+- **VTX:** TBD
+- **Sensors:** 
+  - GPS: GEP-10 DQ
+    - UBLOX
+      - M10 Chip
+    - 12C
+      - *QMC5883L* | MAG
+      - *DPS310* | BAR
+  - IMU | 12C: BO085
+    - *Accelerometer*, *Gyroscope* 
+    - Mag (disabled)
 
 ## Software Requirements
 - Ubuntu 24.04LTS
