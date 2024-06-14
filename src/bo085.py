@@ -1,9 +1,9 @@
-# SPDX-FileCopyrightText: 2020 Bryan Siepert, written for Adafruit Industries
-#
-# SPDX-License-Identifier: Unlicense
-import time
+import rclpy
+from rclpy.node import Node
 import board
 import busio
+
+from sensor_msgs.msg import Imu  # Import the Imu message
 from adafruit_bno08x import (
     BNO_REPORT_ACCELEROMETER,
     BNO_REPORT_GYROSCOPE,
@@ -12,34 +12,51 @@ from adafruit_bno08x import (
 )
 from adafruit_bno08x.i2c import BNO08X_I2C
 
-i2c = busio.I2C(board.SCL, board.SDA)
-bno = BNO08X_I2C(i2c)
 
-bno.enable_feature(BNO_REPORT_ACCELEROMETER)
-bno.enable_feature(BNO_REPORT_GYROSCOPE)
-bno.enable_feature(BNO_REPORT_MAGNETOMETER)
-bno.enable_feature(BNO_REPORT_ROTATION_VECTOR)
+class ImuPublisher(Node):
 
-while True:
-    time.sleep(0.01)
-    print("Acceleration:")
-    accel_x, accel_y, accel_z = bno.acceleration  # pylint:disable=no-member
-    print("ACCEL:\tX: %0.6f  Y: %0.6f Z: %0.6f  m/s^2" % (accel_x, accel_y, accel_z))
-    print("")
+    def __init__(self):
+        super().__init__('imu_publisher')
+        self.get_logger().info('Initializing IMU Publisher Node')
+        
+        self.imu_pub = self.create_publisher(Imu, '/imu_data', 1)  # Topic: /imu_data, queue size: 10
+        self.timer = self.create_timer(0.01, self.publish_data)  # Publish every 0.01 seconds
 
-    print("Gyro:")
-    gyro_x, gyro_y, gyro_z = bno.gyro  # pylint:disable=no-member
-    print("GYRO:\tX: %0.6f  Y: %0.6f Z: %0.6f rads/s" % (gyro_x, gyro_y, gyro_z))
-    print("")
+        i2c = busio.I2C(board.SCL, board.SDA)
+        self.bno = BNO08X_I2C(i2c)
 
-    print("Magnetometer:")
-    mag_x, mag_y, mag_z = bno.magnetic  # pylint:disable=no-member
-    print("X: %0.6f  Y: %0.6f Z: %0.6f uT" % (mag_x, mag_y, mag_z))
-    print("")
+        self.get_logger().info('Enabling BNO08X features')
+        self.bno.enable_feature(BNO_REPORT_ACCELEROMETER)
+        self.bno.enable_feature(BNO_REPORT_GYROSCOPE)
+        # self.bno.enable_feature(BNO_REPORT_MAGNETOMETER)
+        self.bno.enable_feature(BNO_REPORT_ROTATION_VECTOR)
 
-    print("Rotation Vector Quaternion:")
-    quat_i, quat_j, quat_k, quat_real = bno.quaternion  # pylint:disable=no-member
-    print(
-        "ROTATE VECTOR:\tI: %0.6f  J: %0.6f K: %0.6f  Real: %0.6f" % (quat_i, quat_j, quat_k, quat_real)
-    )
-    print("")
+    def publish_data(self):
+        imu_msg = Imu()
+
+        accel_x, accel_y, accel_z = self.bno.acceleration 
+        gyro_x, gyro_y, gyro_z = self.bno.gyro 
+        quat_i, quat_j, quat_k, quat_real = self.bno.quaternion
+
+        imu_msg.linear_acceleration.x = accel_x
+        imu_msg.linear_acceleration.y = accel_y
+        imu_msg.linear_acceleration.z = accel_z # Positive is down
+        imu_msg.angular_velocity.x = gyro_x
+        imu_msg.angular_velocity.y = gyro_y
+        imu_msg.angular_velocity.z = gyro_z
+        imu_msg.orientation.w = quat_real
+        imu_msg.orientation.x = quat_i
+        imu_msg.orientation.y = quat_j
+        imu_msg.orientation.z = quat_k
+
+        self.get_logger().info(f'Publishing IMU data: Accel=({accel_x}, {accel_y}, {accel_z})')
+        self.imu_pub.publish(imu_msg)
+
+def main():
+    rclpy.init()
+    node = ImuPublisher()
+    rclpy.spin(node)
+    rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()

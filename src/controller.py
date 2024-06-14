@@ -24,6 +24,8 @@ BUTTON_3 = 10  # OFF/ON | 988, 2011
 BUTTON_4 = 11  # OFF/ON | 988, 2011
 # Channels 12-15 UNUSED
 
+EXPO = 2
+
 class MotorMap(IntEnum):
     MOTOR_1 = 0
     MOTOR_2 = 1
@@ -60,11 +62,8 @@ class Throttle_Publisher(Node):
             self.ARMED = False
 
         if self.ARMED:
-            roll_value = self.crsf_channels[ROLL]
-            pitch_value = self.crsf_channels[PITCH]
-            yaw_value = self.crsf_channels[YAW]
             throttle_value = self.crsf_channels[THROTTLE]
-            mapped_throttle_value = self.exponential_mapping(throttle_value)
+            mapped_throttle_value = self.exponential_mapping(throttle_value, EXPO)
 
             self.current_values = [mapped_throttle_value] * 4
             self.throttle_transformation()
@@ -83,12 +82,12 @@ class Throttle_Publisher(Node):
             self.publisher_.publish(array)
             self.get_logger().info(f"Publishing: {array.data}, NOT ARMED")
 
-    def exponential_mapping(self, value):
+    def exponential_mapping(self, value, expo=2):
         normalized_value = (value - 988) / (2012 - 988)
-        expo_value = normalized_value**2
+        expo_value = normalized_value**expo
         return int(expo_value * 2047)
 
-    def percent_map(self, value, exponent=2):
+    def percent_map(self, value, expo=2):
         """Now with EXPO"""
         input_range = (988, 1500, 2012)
         output_range = (-15, 0, 15)
@@ -102,9 +101,9 @@ class Throttle_Publisher(Node):
             norm_value = (value - input_range[1]) / (input_range[2] - input_range[1])
 
         if norm_value < 0:
-            mapped_value = output_range[1] + (output_range[0] - output_range[1]) * (abs(norm_value) ** exponent)
+            mapped_value = output_range[1] + (output_range[0] - output_range[1]) * (abs(norm_value) ** expo)
         else:
-            mapped_value = output_range[1] + (output_range[2] - output_range[1]) * (norm_value ** exponent)
+            mapped_value = output_range[1] + (output_range[2] - output_range[1]) * (norm_value ** expo)
 
         return mapped_value / 100.0
 
@@ -114,9 +113,9 @@ class Throttle_Publisher(Node):
         """
         I'll document this eventually
         """
-        roll_per = self.percent_map(self.crsf_channels[ROLL])
-        pitch_per = self.percent_map(self.crsf_channels[PITCH])
-        yaw_per = self.percent_map(self.crsf_channels[YAW])
+        roll_per = self.percent_map(self.crsf_channels[ROLL], EXPO)
+        pitch_per = self.percent_map(self.crsf_channels[PITCH], EXPO)
+        yaw_per = self.percent_map(self.crsf_channels[YAW], EXPO)
 
         # Note this works because all throttle values are initially the same
         roll_vals = round(self.current_values[MotorMap.MOTOR_1] * roll_per)
