@@ -71,6 +71,9 @@ class Throttle_Publisher(Node):
             for i in range(4):
                 if self.current_values[i] > 2047:
                     self.current_values[i] = 2047
+                elif self.current_values[i] < 100:
+                    self.current_values[i] = 100
+
 
             array.data = self.current_values
             self.publisher_.publish(array)
@@ -85,7 +88,7 @@ class Throttle_Publisher(Node):
     def exponential_mapping(self, value, expo=2):
         normalized_value = (value - 988) / (2012 - 988)
         expo_value = normalized_value**expo
-        return int(expo_value * 2047)
+        return int(expo_value * 2047+100)
 
     def percent_map(self, value, expo=2):
         """Now with EXPO"""
