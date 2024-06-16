@@ -1,7 +1,10 @@
 from enum import IntEnum
 import rclpy
+import numpy as np
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
+from sensor_msgs.msg import Imu  # Importing the IMU message type
+
 
 """
 Some Info on how the channels are used by the drone.
@@ -26,6 +29,7 @@ BUTTON_4 = 11  # OFF/ON | 988, 2011
 
 EXPO = 2
 
+
 class MotorMap(IntEnum):
     MOTOR_1 = 0
     MOTOR_2 = 1
@@ -46,11 +50,31 @@ class Throttle_Publisher(Node):
         self.subscription = self.create_subscription(
             Int16MultiArray, "crsf_channels_data", self.crsf_callback, 1
         )
+        self.imu_subscription = self.create_subscription(
+            Imu, "imu_data", self.imu_callback, 1
+        )
+
         self.crsf_channels = [0] * 16
         self.ARMED = False
+        self.euler_orientation = None
+        self.linear_acc = None
+        self.angular_vel = None
 
     def crsf_callback(self, msg):
         self.crsf_channels = msg.data
+
+    def imu_callback(self, msg):
+        # Handling IMU data
+        # TODO Stablization Code
+        self.linear_acc = msg.linear_acceleration
+        self.angular_vel = msg.angular_velocity
+        quat = msg.orientation
+        self.euler_orientation = self.quaternion_to_euler(
+            [quat.w, quat.x, quat.y, quat.z]
+        )
+        # self.get_logger().info(
+        #     f"Received IMU data: {self.linear_acc}, {self.angular_vel}, {self.euler_orientation}"
+        # )
 
     def timer_callback(self):
         array = Int16MultiArray()
@@ -74,7 +98,6 @@ class Throttle_Publisher(Node):
                 elif self.current_values[i] < 100:
                     self.current_values[i] = 100
 
-
             array.data = self.current_values
             self.publisher_.publish(array)
             self.get_logger().info(f"Publishing: {array.data}")
@@ -88,7 +111,7 @@ class Throttle_Publisher(Node):
     def exponential_mapping(self, value, expo=2):
         normalized_value = (value - 988) / (2012 - 988)
         expo_value = normalized_value**expo
-        return int(expo_value * 2047+100)
+        return int(expo_value * 2047 + 100)
 
     def percent_map(self, value, expo=2):
         """Now with EXPO"""
@@ -96,7 +119,9 @@ class Throttle_Publisher(Node):
         output_range = (-15, 0, 15)
 
         if not input_range[0] <= value <= input_range[-1]:
-            raise ValueError(f"Input value {value} is out of the range [{input_range[0]}, {input_range[-1]}]")
+            raise ValueError(
+                f"Input value {value} is out of the range [{input_range[0]}, {input_range[-1]}]"
+            )
 
         if value <= input_range[1]:
             norm_value = (value - input_range[1]) / (input_range[1] - input_range[0])
@@ -104,13 +129,15 @@ class Throttle_Publisher(Node):
             norm_value = (value - input_range[1]) / (input_range[2] - input_range[1])
 
         if norm_value < 0:
-            mapped_value = output_range[1] + (output_range[0] - output_range[1]) * (abs(norm_value) ** expo)
+            mapped_value = output_range[1] + (output_range[0] - output_range[1]) * (
+                abs(norm_value) ** expo
+            )
         else:
-            mapped_value = output_range[1] + (output_range[2] - output_range[1]) * (norm_value ** expo)
+            mapped_value = output_range[1] + (output_range[2] - output_range[1]) * (
+                norm_value**expo
+            )
 
         return mapped_value / 100.0
-
-
 
     def throttle_transformation(self):
         """
@@ -137,6 +164,31 @@ class Throttle_Publisher(Node):
         self.current_values[MotorMap.MOTOR_4] = (
             self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals + yaw_vals
         )
+
+    def quaternion_to_euler(self, quat):
+        # Ripped from Online, I'm really not sure how quaternions work
+        w, x, y, z = quat
+
+        # Yaw (z-axis rotation)
+        siny_cosp = 2 * (w * z + x * y)
+        cosy_cosp = 1 - 2 * (y * y + z * z)
+        yaw = np.arctan2(siny_cosp, cosy_cosp)
+
+        # Roll (y-axis rotation)
+        sinp = 2 * (w * y - z * x)
+        roll = np.arcsin(sinp)
+
+        # Pitch (x-axis rotation)
+        sinr_cosp = 2 * (w * x + y * z)
+        cosr_cosp = 1 - 2 * (x * x + y * y)
+        pitch = np.arctan2(sinr_cosp, cosr_cosp)
+
+        # Convert radians to degrees
+        yaw = np.degrees(yaw)
+        roll = np.degrees(roll)
+        pitch = np.degrees(pitch)
+
+        return pitch, yaw, roll
 
 
 def main(args=None):
