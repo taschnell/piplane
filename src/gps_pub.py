@@ -1,46 +1,48 @@
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import NavSatFix  # ROS 2 message type for GPS data
+from sensor_msgs.msg import NavSatFix
 import gps
 
-
-class GPSNode(Node):
+class GPSDClient(Node):
     def __init__(self):
-        super().__init__("gps")
-        self.publisher_ = self.create_publisher(NavSatFix, "gps_data", 1)
+        super().__init__('gpsd_client')
+        self.publisher_ = self.create_publisher(NavSatFix, 'gps/fix', 10)
         self.session = gps.gps(mode=gps.WATCH_ENABLE)
+        self.timer = self.create_timer(0.2, self.timer_callback)
+        self.get_logger().info('GPSD client node started.')
 
-    def run_gps(self):
-        while not self.session.waiting(0.2):
-            if not (gps.MODE_SET & self.session.valid):
-                continue
-
+    def timer_callback(self):
+        if self.session.read() == 0 and (self.session.valid):
             msg = NavSatFix()
-            msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = "gps_frame"
-            msg.status.service = NavSatFix.SERVICE_GPS
+            if gps.TIME_SET & self.session.valid:
+                msg.header.stamp = self.get_clock().now().to_msg()
+            else:
+                msg.header.stamp = rclpy.time.Time().to_msg()
+            
+            msg.latitude = self.session.fix.latitude if gps.isfinite(self.session.fix.latitude) else float('nan')
+            msg.longitude = self.session.fix.longitude if gps.isfinite(self.session.fix.longitude) else float('nan')
+            msg.altitude = self.session.fix.altHAE if gps.isfinite(self.session.fix.altHAE) else float('nan')
 
-            msg.latitude = self.session.fix.latitude
-            msg.longitude = self.session.fix.longitude
-            msg.altitude = self.session.fix.altMSL
-            msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
             msg.position_covariance = [0.0] * 9
+            msg.position_covariance_type = NavSatFix.COVARIANCE_TYPE_UNKNOWN
 
             self.publisher_.publish(msg)
-            self.get_logger().info("Publishing GPS data")
-
+            self.get_logger().info(f'Published GPS data: Lat {msg.latitude}, Lon {msg.longitude}, Alt {msg.altitude}')
+        else:
+            self.get_logger().warn('No valid GPS data received.')
 
 def main(args=None):
     rclpy.init(args=args)
-    node = GPSNode()
+    node = GPSDClient()
+
     try:
-        node.run_gps()
+        rclpy.spin(node)
     except KeyboardInterrupt:
-        pass
-    finally:
-        node.session.close()
-        rclpy.shutdown()
+        node.get_logger().info('Keyboard interrupt, shutting down.')
 
+    node.session.close()
+    node.destroy_node()
+    rclpy.shutdown()
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
