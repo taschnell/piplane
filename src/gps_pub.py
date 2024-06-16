@@ -6,7 +6,7 @@ import gps
 class GPSDClient(Node):
     def __init__(self):
         super().__init__('gpsd_client')
-        self.publisher_ = self.create_publisher(NavSatFix, 'gps/fix', 10)
+        self.publisher_ = self.create_publisher(NavSatFix, 'gps/fix', 1)
         self.session = gps.gps(mode=gps.WATCH_ENABLE)
         self.timer = self.create_timer(0.2, self.timer_callback)
         self.get_logger().info('GPSD client node started.')
