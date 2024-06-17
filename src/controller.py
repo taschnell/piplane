@@ -60,6 +60,7 @@ class Throttle_Publisher(Node):
 
         self.crsf_channels = [0] * 16
         self.ARMED = False
+        self.ARMING_ALLOWED = False
         self.MODE = "ANGLE"  # Can also Be ACRO
         self.euler_orientation = None
         self.linear_acc = None
@@ -92,11 +93,12 @@ class Throttle_Publisher(Node):
     def timer_callback(self):
         array = Int16MultiArray()
 
-        # Will only ARM if throttle is zero
-        if not self.ARMED and self.crsf_channels[THROTTLE] == 988:
+        # Will only ARM if throttle is zero & Arm Switch is down
+        if not self.ARMED and self.crsf_channels[THROTTLE] == 988 and self.ARMING_ALLOWED:
             self.ARMED = self.crsf_channels[ARM] == 2011
         elif self.ARMED and self.crsf_channels[ARM] == 988:
             self.ARMED = False
+        self.ARMING_ALLOWED = (self.crsf_channels[THROTTLE] == 988 and self.crsf_channels[ARM] == 988)
 
         # Flight Mode, add automated mode later?
         if self.crsf_channels[MODE] < 1500:
