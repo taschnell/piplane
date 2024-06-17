@@ -1,8 +1,7 @@
 import multiprocessing
 import crsf_demo
-import servo_test
-import pwm_motor
-import bo085_pub
+import legacy.servo_test as servo_test
+import imu_pub
 
 def main():
     def run_servo_test():

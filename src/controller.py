@@ -4,8 +4,12 @@ import numpy as np
 import math
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
-from sensor_msgs.msg import Imu  # Importing the IMU message type
+from sensor_msgs.msg import Imu
 
+"""
+SETUP TO RUN PICO:
+ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0 baudrate=115200
+"""
 
 """
 Some Info on how the channels are used by the drone.
@@ -30,14 +34,12 @@ BUTTON_4 = 11  # OFF/ON | 988, 2011
 
 EXPO = 2
 
-
 class MotorMap(IntEnum):
     # Isn't it great how hardware goes from 1-4, but Programming indexs are from 0-3
     MOTOR_1 = 0
     MOTOR_2 = 1
     MOTOR_3 = 2
     MOTOR_4 = 3
-
 
 class Throttle_Publisher(Node):
 
@@ -171,8 +173,8 @@ class Throttle_Publisher(Node):
         #     f"{roll_err}: {self.angle_expo_adj_per(roll_err, rate=MAX_THROTTLE_ADJUSTMENT)}, {pitch_err}: {self.angle_expo_adj_per(pitch_err, rate=MAX_THROTTLE_ADJUSTMENT)}"
         # )
 
-        roll_per = self.angle_expo_adj_per(roll_err, rate=MAX_THROTTLE_ADJUSTMENT)
-        pitch_per = self.angle_expo_adj_per(pitch_err, rate=MAX_THROTTLE_ADJUSTMENT)
+        roll_per = self.angle_expo_adj_per(roll_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
+        pitch_per = self.angle_expo_adj_per(pitch_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
 
         # Note this works because all throttle values are initially the same
         roll_vals = round(self.current_values[MotorMap.MOTOR_1] * roll_per)
@@ -196,6 +198,7 @@ class Throttle_Publisher(Node):
         input_range = (-50, 0, 50)
         output_range = (-rate, 0, rate)
 
+        # Max change should not go above rate value (15%)
         if input_range[0] >= error:
             return -rate / 100
         elif error >= input_range[-1]:
