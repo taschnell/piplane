@@ -171,7 +171,7 @@ def handleCrsfPacket(ptype, data):
         print(f"Unknown 0x{ptype:02x}: {packet}")
 
 
-class CrsfNode(Node):
+class Crsf(Node):
     def __init__(self):
         super().__init__("crsf_node")
         self.channel_publisher_ = self.create_publisher(
@@ -186,7 +186,7 @@ class CrsfNode(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = CrsfNode()
+    node = Crsf()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-P", "--port", default="/dev/ttyAMA0", required=False)

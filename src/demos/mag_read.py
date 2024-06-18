@@ -55,3 +55,4 @@ if __name__ == "__main__":
         x, y, z = read_qmc5883l()
         print(f"X: {x}, Y: {y}, Z: {z}")
         time.sleep(0.01)
+

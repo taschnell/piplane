@@ -7,7 +7,7 @@ from std_msgs.msg import Int16MultiArray
 from sensor_msgs.msg import Imu
 
 """
-SETUP TO RUN PICO:
+TO RUN THE PICO:
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0 baudrate=115200
 """
 
@@ -41,7 +41,7 @@ class MotorMap(IntEnum):
     MOTOR_3 = 2
     MOTOR_4 = 3
 
-class Throttle_Publisher(Node):
+class Controller(Node):
 
     def __init__(self):
         super().__init__("motor_array")
@@ -87,8 +87,8 @@ class Throttle_Publisher(Node):
         self.euler_orientation = self.quaternion_to_euler(
             [quat.w, quat.x, quat.y, quat.z]
         )
-        # self.get_logger().info(f"{self.g_force}"
-        # )
+        self.get_logger().info(f"{self.euler_orientation}"
+        )
 
     def timer_callback(self):
         array = Int16MultiArray()
@@ -133,9 +133,9 @@ class Throttle_Publisher(Node):
             array.data = self.current_values
 
         self.publisher_dshot.publish(array)
-        self.get_logger().info(
-            f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
-        )
+        # self.get_logger().info(
+        #     f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
+        # )
 
     def exponential_mapping(self, value, expo=2):
         # Isn't math cool!?
@@ -307,7 +307,7 @@ class Throttle_Publisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Throttle_Publisher()
+    node = Controller()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:

@@ -1,5 +1,5 @@
 import multiprocessing
-import crsf_demo
+import demos.crsf_demo as crsf_demo
 import legacy.servo_test as servo_test
 import imu_pub
 
