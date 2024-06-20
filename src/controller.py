@@ -41,10 +41,10 @@ class MotorMap(IntEnum):
     MOTOR_3 = 2
     MOTOR_4 = 3
 
-class Controller(Node):
+class controller(Node):
 
     def __init__(self):
-        super().__init__("motor_array")
+        super().__init__("controller")
         self.publisher_dshot = self.create_publisher(Int16MultiArray, "motor_array", 1)
 
         self.current_values = [0] * 4
@@ -87,8 +87,8 @@ class Controller(Node):
         self.euler_orientation = self.quaternion_to_euler(
             [quat.w, quat.x, quat.y, quat.z]
         )
-        self.get_logger().info(f"{self.euler_orientation}"
-        )
+        # self.get_logger().info(f"{self.euler_orientation}"
+        # )
 
     def timer_callback(self):
         array = Int16MultiArray()
@@ -133,9 +133,9 @@ class Controller(Node):
             array.data = self.current_values
 
         self.publisher_dshot.publish(array)
-        # self.get_logger().info(
-        #     f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
-        # )
+        self.get_logger().info(
+            f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
+        )
 
     def exponential_mapping(self, value, expo=2):
         # Isn't math cool!?
@@ -155,24 +155,25 @@ class Controller(Node):
         """
         DEGREES = 25
         MAX_THROTTLE_ADJUSTMENT = (
-            15  # Adjust this value to control sensitivity, max throttle change is 15%
+            35  # Adjust this value to control sensitivity, max throttle change is 15%
         )
 
+        Expo_2 = 1
         RATE = 100
 
-        roll_angle = self.percent_map(self.crsf_channels[ROLL], EXPO, RATE) * DEGREES
-        pitch_angle = self.percent_map(self.crsf_channels[PITCH], EXPO, RATE) * DEGREES
-        yaw_per = self.percent_map(self.crsf_channels[YAW], EXPO, RATE)
+        roll_angle = self.percent_map(self.crsf_channels[ROLL], Expo_2, RATE) * DEGREES
+        pitch_angle = self.percent_map(self.crsf_channels[PITCH], Expo_2, RATE) * DEGREES
+        yaw_per = self.percent_map(self.crsf_channels[YAW], Expo_2, RATE)
 
         imu_pitch = self.euler_orientation[0]
-        # imu_yaw = self.euler_orientation[1]
+        imu_yaw = self.euler_orientation[1]
         imu_roll = self.euler_orientation[2]
 
         roll_err = roll_angle - imu_roll
         pitch_err = pitch_angle - imu_pitch
 
         # self.get_logger().info(
-        #     f"{roll_err}: {self.angle_expo_adj_per(roll_err, rate=MAX_THROTTLE_ADJUSTMENT)}, {pitch_err}: {self.angle_expo_adj_per(pitch_err, rate=MAX_THROTTLE_ADJUSTMENT)}"
+        #     f"Roll {imu_roll}, Pitch {imu_pitch}, yaw {imu_yaw}"
         # )
 
         roll_per = self.angle_expo_adj_per(roll_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
@@ -196,8 +197,8 @@ class Controller(Node):
             self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals + yaw_vals
         )
 
-    def angle_expo_adj_per(self, error, expo=2, rate=15):
-        input_range = (-50, 0, 50)
+    def angle_expo_adj_per(self, error, expo=2, rate=35):
+        input_range = (-25, 0, 25)
         output_range = (-rate, 0, rate)
 
         # Max change should not go above rate value (15%)
@@ -252,8 +253,13 @@ class Controller(Node):
             self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals + yaw_vals
         )
 
+    import numpy as np
+
     def quaternion_to_euler(self, quat):
-        # Ripped from Online, I'm really not sure how quaternions work
+        """
+        Convert a quaternion into Euler angles (roll, pitch, yaw)
+        quat: 4-tuple/list or numpy array (w, x, y, z)
+        """
         w, x, y, z = quat
 
         # Yaw (z-axis rotation)
@@ -261,21 +267,25 @@ class Controller(Node):
         cosy_cosp = 1 - 2 * (y * y + z * z)
         yaw = np.arctan2(siny_cosp, cosy_cosp)
 
-        # Roll (y-axis rotation)
+        # Pitch (y-axis rotation)
         sinp = 2 * (w * y - z * x)
-        roll = np.arcsin(sinp)
+        if np.abs(sinp) >= 1:
+            pitch = np.sign(sinp) * np.pi / 2  # use 90 degrees if out of range
+        else:
+            pitch = np.arcsin(sinp)
 
-        # Pitch (x-axis rotation)
+        # Roll (x-axis rotation)
         sinr_cosp = 2 * (w * x + y * z)
         cosr_cosp = 1 - 2 * (x * x + y * y)
-        pitch = np.arctan2(sinr_cosp, cosr_cosp)
+        roll = np.arctan2(sinr_cosp, cosr_cosp)
 
         # Convert radians to degrees
         yaw = np.degrees(yaw)
         roll = np.degrees(roll)
         pitch = np.degrees(pitch)
 
-        return pitch, yaw, roll
+        return -pitch, yaw, -roll
+
 
     def percent_map(self, value, expo=2, rate=15):
         """Now with EXPO"""
@@ -307,7 +317,7 @@ class Controller(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = Controller()
+    node = controller()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
