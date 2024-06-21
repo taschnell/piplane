@@ -155,7 +155,7 @@ class controller(Node):
         """
         DEGREES = 25
         MAX_THROTTLE_ADJUSTMENT = (
-            35  # Adjust this value to control sensitivity, max throttle change is 15%
+            10  # Adjust this value to control sensitivity, max throttle change is 15%
         )
 
         Expo_2 = 1
@@ -172,9 +172,9 @@ class controller(Node):
         roll_err = roll_angle - imu_roll
         pitch_err = pitch_angle - imu_pitch
 
-        # self.get_logger().info(
-        #     f"Roll {imu_roll}, Pitch {imu_pitch}, yaw {imu_yaw}"
-        # )
+        self.get_logger().info(
+            f"Roll {imu_roll}, Pitch {imu_pitch}, yaw {imu_yaw}"
+        )
 
         roll_per = self.angle_expo_adj_per(roll_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
         pitch_per = self.angle_expo_adj_per(pitch_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
@@ -185,20 +185,20 @@ class controller(Node):
         yaw_vals = round(self.current_values[MotorMap.MOTOR_1] * yaw_per)
 
         self.current_values[MotorMap.MOTOR_1] = (
-            self.current_values[MotorMap.MOTOR_1] - roll_vals + pitch_vals + yaw_vals
+            self.current_values[MotorMap.MOTOR_1] - roll_vals + pitch_vals - yaw_vals
         )
         self.current_values[MotorMap.MOTOR_2] = (
-            self.current_values[MotorMap.MOTOR_2] - roll_vals - pitch_vals - yaw_vals
+            self.current_values[MotorMap.MOTOR_2] - roll_vals - pitch_vals + yaw_vals
         )
         self.current_values[MotorMap.MOTOR_3] = (
-            self.current_values[MotorMap.MOTOR_3] + roll_vals + pitch_vals - yaw_vals
+            self.current_values[MotorMap.MOTOR_3] + roll_vals + pitch_vals + yaw_vals
         )
         self.current_values[MotorMap.MOTOR_4] = (
-            self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals + yaw_vals
+            self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals - yaw_vals
         )
 
-    def angle_expo_adj_per(self, error, expo=2, rate=35):
-        input_range = (-25, 0, 25)
+    def angle_expo_adj_per(self, error, expo=2, rate=15):
+        input_range = (-35, 0, 35)
         output_range = (-rate, 0, rate)
 
         # Max change should not go above rate value (15%)
