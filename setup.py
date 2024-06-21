@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'board', 'micro_ros_agent'],
     zip_safe=True,
     maintainer='taschnell',
     maintainer_email='schnellteo@hotmail.com',
@@ -20,7 +20,9 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'crsf_node = src.crsf_pub:main'
+            'crsf_node = src.crsf_pub:main',
+            'Controller = src.controller:main',
+            'imu_publisher = src.imu_pub:main'
         ],
     },
 )

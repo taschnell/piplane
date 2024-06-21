@@ -122,8 +122,8 @@ class controller(Node):
                 # Min Value of 100, Max of 2047 when armed
                 if self.current_values[i] > 2047:
                     self.current_values[i] = 2047
-                elif self.current_values[i] < 100:
-                    self.current_values[i] = 100
+                elif self.current_values[i] < 200:
+                    self.current_values[i] = 200
 
             array.data = self.current_values
 
@@ -141,7 +141,7 @@ class controller(Node):
         # Isn't math cool!?
         normalized_value = (value - 988) / (2012 - 988)
         expo_value = normalized_value**expo
-        return int(expo_value * 1947 + 100)
+        return int(expo_value * 1847 + 200)
 
     def angle_throttle_transformation(self):
         """
@@ -155,7 +155,7 @@ class controller(Node):
         """
         DEGREES = 25
         MAX_THROTTLE_ADJUSTMENT = (
-            10  # Adjust this value to control sensitivity, max throttle change is 15%
+            11  # Adjust this value to control sensitivity, max throttle change is 15%
         )
 
         Expo_2 = 1
