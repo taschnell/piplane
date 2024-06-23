@@ -1,35 +1,35 @@
-#!$HOME/env/bin/python
+#!/home/user/env/bin/python
 
 import launch
 from launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import ExecuteProcess, RegisterEventHandler
+from launch.substitutions import FindExecutable, LaunchConfiguration
 
 def generate_launch_description():
-    return LaunchDescription([
-        Node(
-            package='piplane',
-            executable='crsf_node',
-            name='crsf_node'
-        ),
-        Node(
-            package='piplane',
-            executable='Controller',
-            name='Controller'
-        ),
-        Node(
-            package='piplane',
-            executable='imu_publisher',
-            name='imu_publisher')
-        ),
-        # Something is wrong with MicroRos when launched here, will investigate
-        Node(
-            package='micro_ros_agent',
-            executable='micro_ros_agent',
-            name='micro_ros_agent',
-            output='screen',
-            parameters=[{'discovery_address': 'serial', 'dev': '/dev/ttyACM0'}]  # Adjust parameters as needed
-        )
-    ])
+    micro_ros_port = '/dev/ttyACM0'
+    respawn_time = 0.1
+    micro_ros_baudrate = 115200
+    return LaunchDescription(
+        [
+            Node(package="piplane", executable="crsf_node", name="crsf_node"),
+            Node(package="piplane", executable="Controller", name="Controller"),
+            Node(package="piplane", executable="imu_publisher", name="imu_publisher"),
+            # Micro Ros is Bricked here, can launch manually but thats it
+            ExecuteProcess(
+                cmd=[
+        'ros2', 'run', 'micro_ros_agent', 'micro_ros_agent', 'serial',
+        '--dev', micro_ros_port, f'baudrate:={micro_ros_baudrate}'
+    ],
+                shell=True,
+                name="micro-ros-agent",
+                output='both',
+                respawn=True,
+                respawn_delay=respawn_time
+            ),
+        ]
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     generate_launch_description()

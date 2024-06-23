@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import serial
 import time
-import argparse
+# import argparse
 from enum import IntEnum
 import sys
 
@@ -187,22 +187,25 @@ class Crsf(Node):
 def main(args=None):
     rclpy.init(args=args)
     node = Crsf()
+    
+    port = "/dev/ttyAMA0"
+    baud = 420000
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-P", "--port", default="/dev/ttyAMA0", required=False)
-    # CRSF Either uses 400k or 420k, however most Flight controllers expect 420k, so we'll do the same
-    parser.add_argument("-b", "--baud", default=420000, required=False)
-    parser.add_argument(
-        "-t",
-        "--tx",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Enable sending CHANNELS_PACKED every 20ms (all channels 1500us)",
-    )
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-P", "--port", default="/dev/ttyAMA0", required=False)
+    # # CRSF Either uses 400k or 420k, however most Flight controllers expect 420k, so we'll do the same
+    # parser.add_argument("-b", "--baud", default=420000, required=False)
+    # parser.add_argument(
+    #     "-t",
+    #     "--tx",
+    #     required=False,
+    #     default=False,
+    #     action="store_true",
+    #     help="Enable sending CHANNELS_PACKED every 20ms (all channels 1500us)",
+    # )
+    # args = parser.parse_args()
 
-    with serial.Serial(args.port, args.baud, timeout=2) as ser:
+    with serial.Serial(port, baud, timeout=2) as ser:
         input = bytearray()
         counter = 0
         try:
