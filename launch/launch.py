@@ -1,3 +1,5 @@
+#!$HOME/env/bin/python
+
 import launch
 from launch import LaunchDescription
 from launch_ros.actions import Node
@@ -17,7 +19,7 @@ def generate_launch_description():
         Node(
             package='piplane',
             executable='imu_publisher',
-            name='imu_publisher'
+            name='imu_publisher')
         ),
         # Something is wrong with MicroRos when launched here, will investigate
         Node(
@@ -25,7 +27,7 @@ def generate_launch_description():
             executable='micro_ros_agent',
             name='micro_ros_agent',
             output='screen',
-            parameters=[{'discovery_address': 'UDP_LOCAL', 'dev': '/dev/ttyACM0'}]  # Adjust parameters as needed
+            parameters=[{'discovery_address': 'serial', 'dev': '/dev/ttyACM0'}]  # Adjust parameters as needed
         )
     ])
 

@@ -1,3 +1,4 @@
+#!$HOME/env/bin/python
 import rclpy
 from rclpy.node import Node
 import board
@@ -60,10 +61,12 @@ class ImuPublisher(Node):
 
 
 def main():
-    rclpy.init()
-    node = ImuPublisher()
-    rclpy.spin(node)
-    rclpy.shutdown()
+    try:
+        rclpy.init()
+        node = ImuPublisher()
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        rclpy.shutdown()
 
 
 if __name__ == "__main__":
