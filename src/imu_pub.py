@@ -24,8 +24,8 @@ class ImuPublisher(Node):
             Imu, "/imu_data", 1
         )  # Topic: /imu_data, queue size: 10
         self.timer = self.create_timer(
-            0.001, self.publish_data
-        )  # Publish every 0.01 seconds
+            0.02, self.publish_data
+        )  # 50 Hz
 
         i2c = busio.I2C(board.SCL, board.SDA)
         self.bno = BNO08X_I2C(i2c)
