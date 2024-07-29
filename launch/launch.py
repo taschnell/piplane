@@ -14,8 +14,8 @@ def generate_launch_description():
     return LaunchDescription(
         [
             Node(package="piplane", executable="crsf_node", name="crsf_node"),
-            Node(package="piplane", executable="Controller", name="Controller"),
             Node(package="piplane", executable="imu_publisher", name="imu_publisher"),
+            Node(package="piplane", executable="Controller", name="Controller"),
             ExecuteProcess(
                 cmd=[
                     "ros2",
