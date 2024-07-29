@@ -164,10 +164,15 @@ class controller(Node):
         roll_angle = self.percent_map(self.crsf_channels[ROLL], Expo_2, RATE) * DEGREES
         pitch_angle = self.percent_map(self.crsf_channels[PITCH], Expo_2, RATE) * DEGREES
         yaw_per = self.percent_map(self.crsf_channels[YAW], Expo_2, RATE)
+        try:
+            imu_pitch = self.euler_orientation[0]
+            imu_yaw = self.euler_orientation[1]
+            imu_roll = self.euler_orientation[2]
+        except Exception as e:
+            self.get_logger().info("IMU ERROR")
+            self.ARMED = False
+            pass
 
-        imu_pitch = self.euler_orientation[0]
-        imu_yaw = self.euler_orientation[1]
-        imu_roll = self.euler_orientation[2]
 
         roll_err = roll_angle - imu_roll
         pitch_err = pitch_angle - imu_pitch
