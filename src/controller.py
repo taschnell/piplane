@@ -5,6 +5,7 @@ import math
 from rclpy.node import Node
 from std_msgs.msg import Int16MultiArray
 from sensor_msgs.msg import Imu
+from datetime import datetime
 
 """
 TO RUN THE PICO:
@@ -66,6 +67,19 @@ class controller(Node):
         self.linear_acc = None
         self.angular_vel = None
         self.g_force = 0
+        self.file = open("flight_data.csv", "w")
+        self.file.write("Timestamp,Roll,Pitch,Throttle,Yaw,Armed,Mode,IMU_Pitch,IMU_Yaw,IMU_Roll,IMU_GForce,Motor_1,Motor_2,Motor_3,Motor_4\n")
+
+        # Initialize PID controller variables
+        self.previous_roll_error = 0
+        self.previous_pitch_error = 0
+        self.roll_integral = 0
+        self.pitch_integral = 0
+
+        # PID constants
+        self.Kp = 1.0
+        self.Ki = 0.1
+        self.Kd = 0.01
 
     def crsf_callback(self, msg):
         self.crsf_channels = msg.data
@@ -87,7 +101,9 @@ class controller(Node):
         self.euler_orientation = self.quaternion_to_euler(
             [quat.w, quat.x, quat.y, quat.z]
         )
-        # self.get_logger().info(f"{self.euler_orientation}"
+
+        
+        # self.get_logger().info(f"{self.angular_vel, self.euler_orientation}"
         # )
 
     def timer_callback(self):
@@ -133,15 +149,20 @@ class controller(Node):
             array.data = self.current_values
 
         self.publisher_dshot.publish(array)
-        self.get_logger().info(
-            f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
-        )
+        # self.get_logger().info(
+        #     f"Publishing: {array.data} | ARMED: {self.ARMED} | MODE: {self.MODE}"
+        # )
+
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        imu_pitch, imu_yaw, imu_roll = self.euler_orientation if self.euler_orientation else (0, 0, 0)
+        self.file.write(f"{timestamp},{self.crsf_channels[ROLL]},{self.crsf_channels[PITCH]},{self.crsf_channels[THROTTLE]},{self.crsf_channels[YAW]},{self.ARMED},{self.MODE},{imu_pitch},{imu_yaw},{imu_roll},{self.g_force},{self.current_values[MotorMap.MOTOR_1]},{self.current_values[MotorMap.MOTOR_2]},{self.current_values[MotorMap.MOTOR_3]},{self.current_values[MotorMap.MOTOR_4]}\n")
+
 
     def exponential_mapping(self, value, expo=2):
         # Isn't math cool!?
         normalized_value = (value - 988) / (2012 - 988)
         expo_value = normalized_value**expo
-        return int(expo_value * 1847 + 200)
+        return int(expo_value * 1647 + 400)
 
     def angle_throttle_transformation(self):
         """
@@ -154,16 +175,16 @@ class controller(Node):
         Should adjust motor speed less drastically if lower error value, and higher if a greater error value
         """
         DEGREES = 25
-        MAX_THROTTLE_ADJUSTMENT = (
-            11  # Adjust this value to control sensitivity, max throttle change is 15%
-        )
+        MAX_THROTTLE_ADJUSTMENT = 20
 
-        Expo_2 = 1
+        EXPO_2 = 1
         RATE = 100
 
-        roll_angle = self.percent_map(self.crsf_channels[ROLL], Expo_2, RATE) * DEGREES
-        pitch_angle = self.percent_map(self.crsf_channels[PITCH], Expo_2, RATE) * DEGREES
-        yaw_per = self.percent_map(self.crsf_channels[YAW], Expo_2, RATE)
+        MAX_ROTATION = 2 # In rads/s
+
+        roll_angle = self.percent_map(self.crsf_channels[ROLL], EXPO_2, RATE) * DEGREES
+        pitch_angle = self.percent_map(self.crsf_channels[PITCH], EXPO_2, RATE) * DEGREES
+
         try:
             imu_pitch = self.euler_orientation[0]
             imu_yaw = self.euler_orientation[1]
@@ -173,18 +194,53 @@ class controller(Node):
             self.ARMED = False
             pass
 
-
         roll_err = roll_angle - imu_roll
         pitch_err = pitch_angle - imu_pitch
 
-        self.get_logger().info(
-            f"Roll {imu_roll}, Pitch {imu_pitch}, yaw {imu_yaw}"
-        )
+        roll_speed = self.angle_expo_adj_per((roll_err), 2, MAX_ROTATION)
+        pitch_speed = self.angle_expo_adj_per((pitch_err), 2, MAX_ROTATION)
 
-        roll_per = self.angle_expo_adj_per(roll_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
-        pitch_per = self.angle_expo_adj_per(pitch_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
 
-        # Note this works because all throttle values are initially the same
+        # self.get_logger().info(f"Roll SPEED: {round(roll_speed, 4)}, ERR: {round(roll_err,2)} | Pitch SPEED: {round(pitch_speed, 4)}, ERR: {round(pitch_err,2)}")
+
+        roll_speed_err = roll_speed - self.angular_vel.x
+        pitch_speed_err = pitch_speed - self.angular_vel.y
+
+
+        roll_per = self.angle_expo_adj_per(roll_speed_err, 1, MAX_THROTTLE_ADJUSTMENT, 2.0)/100.0
+        pitch_per = self.angle_expo_adj_per(pitch_speed_err, 1, MAX_THROTTLE_ADJUSTMENT, 2.0)/100.0
+
+        self.get_logger().info(f"Roll SPEED: {round(roll_per, 4)}, ERR: {round(roll_speed_err,2)} | Pitch SPEED: {round(pitch_per, 4)}, ERR: {round(pitch_speed_err,2)}")
+
+
+
+        # # Calculate integral and derivative terms
+        # self.roll_integral += roll_err * self.timer.timer_period_ns * 1e-9
+        # self.pitch_integral += pitch_err * self.timer.timer_period_ns * 1e-9
+
+        # roll_derivative = (roll_err - self.previous_roll_error) / (self.timer.timer_period_ns * 1e-9)
+        # pitch_derivative = (pitch_err - self.previous_pitch_error) / (self.timer.timer_period_ns * 1e-9)
+
+        # self.previous_roll_error = roll_err
+        # self.previous_pitch_error = pitch_err
+
+        # roll_per = (
+        #     self.Kp * roll_err +
+        #     self.Ki * self.roll_integral +
+        #     self.Kd * roll_derivative
+        # ) / 100
+
+        # pitch_per = (
+        #     self.Kp * pitch_err +
+        #     self.Ki * self.pitch_integral +
+        #     self.Kd * pitch_derivative
+        # ) / 100
+
+        # yaw_err = imu_yaw
+        # yaw_per = self.angle_expo_adj_per(yaw_err, EXPO, MAX_THROTTLE_ADJUSTMENT)
+
+        yaw_per = 0
+
         roll_vals = round(self.current_values[MotorMap.MOTOR_1] * roll_per)
         pitch_vals = round(self.current_values[MotorMap.MOTOR_1] * pitch_per)
         yaw_vals = round(self.current_values[MotorMap.MOTOR_1] * yaw_per)
@@ -202,8 +258,8 @@ class controller(Node):
             self.current_values[MotorMap.MOTOR_4] + roll_vals - pitch_vals - yaw_vals
         )
 
-    def angle_expo_adj_per(self, error, expo=2, rate=15):
-        input_range = (-35, 0, 35)
+    def angle_expo_adj_per(self, error, expo=2, rate=15, input_width = 35):
+        input_range = (-input_width, 0, input_width)
         output_range = (-rate, 0, rate)
 
         # Max change should not go above rate value (15%)
@@ -226,7 +282,7 @@ class controller(Node):
                 norm_value**expo
             )
 
-        return mapped_value / 100
+        return mapped_value
 
     def acro_throttle_transformation(self):
         """
@@ -243,7 +299,7 @@ class controller(Node):
         pitch_vals = round(self.current_values[MotorMap.MOTOR_1] * pitch_per)
         yaw_vals = round(self.current_values[MotorMap.MOTOR_1] * yaw_per)
 
-        self.get_logger().info(f"{roll_vals}, {pitch_vals}, {yaw_vals}")
+        # self.get_logger().info(f"{roll_vals}, {pitch_vals}, {yaw_vals}")
 
         self.current_values[MotorMap.MOTOR_1] = (
             self.current_values[MotorMap.MOTOR_1] - roll_vals + pitch_vals + yaw_vals
@@ -319,6 +375,9 @@ class controller(Node):
 
         return mapped_value / 100.0
 
+    def __del__(self):
+        # Close the file when the node is destroyed
+        self.file.close()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -328,6 +387,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        
         node.destroy_node()
         rclpy.shutdown()
 

@@ -27,7 +27,7 @@ class ImuPublisher(Node):
             0.02, self.publish_data
         )  # 50 Hz
 
-        i2c = busio.I2C(board.SCL, board.SDA)
+        i2c = busio.I2C(board.SCL, board.SDA, frequency=400000)
         self.bno = BNO08X_I2C(i2c)
 
         self.get_logger().info("Enabling BNO08X features")
@@ -46,16 +46,16 @@ class ImuPublisher(Node):
         imu_msg.linear_acceleration.x = accel_x
         imu_msg.linear_acceleration.y = accel_y
         imu_msg.linear_acceleration.z = accel_z  # Positive is down
-        imu_msg.angular_velocity.x = gyro_x
-        imu_msg.angular_velocity.y = gyro_y
-        imu_msg.angular_velocity.z = gyro_z
+        imu_msg.angular_velocity.x = -gyro_x # Roll (Positive is right turn)
+        imu_msg.angular_velocity.y = -gyro_y # Pitch (Positive is forward turn)
+        imu_msg.angular_velocity.z = gyro_z # Yaw (counterclockwise is positive)
         imu_msg.orientation.w = quat_real  # What is a quaternion really?
         imu_msg.orientation.x = quat_i
         imu_msg.orientation.y = quat_j
         imu_msg.orientation.z = quat_k
 
         self.get_logger().info(
-            f"Publishing IMU data: Accel=({accel_x}, {accel_y}, {accel_z}), Gyro=({gyro_x}, {gyro_y}, {gyro_z}), Quaternion=({quat_i}, {quat_j}, {quat_k}, {quat_real})"
+            f"Publishing IMU data"
         )
         self.imu_pub.publish(imu_msg)
 
